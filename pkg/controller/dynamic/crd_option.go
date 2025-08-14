@@ -68,8 +68,14 @@ func (cc *CRDController) KindOptionList(c *gin.Context) {
 		})
 		return
 	}
-
-	kinds := getCrdKindListByGroup(ctx, selectedCluster, g)
+	// Get kinds from both v1 and v1beta1 APIs
+	v1Kinds := getCrdKindListByGroup(ctx, selectedCluster, g)
+	beta1Kinds := getCrdKindListByGroupBeta1(ctx, selectedCluster, g)
+	
+	// Combine and deduplicate kinds
+	kinds := append(v1Kinds, beta1Kinds...)
+	kinds = slice.Unique(kinds)
+	slice.Sort(kinds, "asc")
 
 	var options []map[string]string
 	for _, n := range kinds {
@@ -85,20 +91,41 @@ func (cc *CRDController) KindOptionList(c *gin.Context) {
 }
 
 func getCrdGroupList(ctx context.Context, selectedCluster string) []string {
-	list, err := getCrdList(ctx, selectedCluster)
-	if err != nil {
+	// Get CRDs from v1 API
+	v1List, v1Err := getCrdList(ctx, selectedCluster)
+	// Get CRDs from v1beta1 API
+	beta1List, beta1Err := getCrdListBeta1(ctx, selectedCluster)
+
+	// Initialize groups slice
+	var groups []string
+
+	// Process v1 CRDs if available
+	if v1Err == nil {
+		for _, item := range v1List {
+			group, found, err := unstructured.NestedString(item.Object, "spec", "group")
+			if err != nil || !found {
+				continue
+			}
+			groups = append(groups, group)
+		}
+	}
+
+	// Process v1beta1 CRDs if available
+	if beta1Err == nil {
+		for _, item := range beta1List {
+			group, found, err := unstructured.NestedString(item.Object, "spec", "group")
+			if err != nil || !found {
+				continue
+			}
+			groups = append(groups, group)
+		}
+	}
+
+	// If both APIs failed, return empty list
+	if v1Err != nil && beta1Err != nil {
 		return make([]string, 0)
 	}
 
-	var groups []string
-	for _, item := range list {
-		group, found, err := unstructured.NestedString(item.Object, "spec", "group")
-		if err != nil || !found {
-			continue
-		}
-
-		groups = append(groups, group)
-	}
 	groups = slice.Unique(groups)
 	slice.Sort(groups, "asc")
 	return groups
@@ -114,11 +141,50 @@ func getCrdList(ctx context.Context, selectedCluster string) ([]*unstructured.Un
 		List(&list).Error
 	return list, err
 }
+
+func getCrdListBeta1(ctx context.Context, selectedCluster string) ([]*unstructured.Unstructured, error) {
+	var list []*unstructured.Unstructured
+	err := kom.Cluster(selectedCluster).WithContext(ctx).GVK(
+		"apiextensions.k8s.io",
+		"v1beta1",
+		"CustomResourceDefinition").
+		WithCache(time.Second * 30).
+		List(&list).Error
+	return list, err
+}
+
 func getCrdKindListByGroup(ctx context.Context, selectedCluster string, group string) []string {
 	var list []*unstructured.Unstructured
 	err := kom.Cluster(selectedCluster).WithContext(ctx).GVK(
 		"apiextensions.k8s.io",
 		"v1",
+		"CustomResourceDefinition").
+		Where("`spec.group`=?", group).
+		WithCache(time.Second * 30).
+		List(&list).Error
+	if err != nil {
+		return make([]string, 0)
+	}
+
+	var kinds []string
+	for _, item := range list {
+		kind, found, err := unstructured.NestedString(item.Object, "spec", "names", "kind")
+		if err != nil || !found {
+			continue
+		}
+		kinds = append(kinds, kind)
+	}
+	kinds = slice.Unique(kinds)
+	slice.Sort(kinds, "asc")
+	return kinds
+}
+
+
+func getCrdKindListByGroupBeta1(ctx context.Context, selectedCluster string, group string) []string {
+	var list []*unstructured.Unstructured
+	err := kom.Cluster(selectedCluster).WithContext(ctx).GVK(
+		"apiextensions.k8s.io",
+		"v1beta1",
 		"CustomResourceDefinition").
 		Where("`spec.group`=?", group).
 		WithCache(time.Second * 30).
