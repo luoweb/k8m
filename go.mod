@@ -41,21 +41,22 @@ require (
 	// k8s.io/klog/v2 v2.130.1
 	//k8s.io/kubectl v0.33.3
 	// 替换为 K8s 1.15 对应的客户端版本（旧版格式：kubernetes-1.15.0）
-	k8s.io/api v0.0.0-20190620084959-7cf5895f2711
-	k8s.io/apimachinery v0.0.0-20190612205821-1799e75a0719
-	k8s.io/client-go v0.0.0-20190620085101-78d2af792bab
+	k8s.io/api v0.33.4
+	k8s.io/apimachinery v0.33.4
+	k8s.io/client-go v0.33.4
 	// klog/v2 和 kubectl 需匹配客户端版本，K8s 1.15 时期 kubectl 版本同样为旧格式
-	k8s.io/klog/v2 v2.4.0 // 注：K8s 1.15 对应 klog/v2 早期兼容版，避免高版本不兼容
-	k8s.io/kubectl v0.15.13-beta.0
+	k8s.io/klog/v2 v2.130.1 // 注：K8s 1.15 对应 klog/v2 早期兼容版，避免高版本不兼容
+	k8s.io/kubectl v0.33.4
 	sigs.k8s.io/gateway-api v1.3.0
 	sigs.k8s.io/yaml v1.6.0
 )
 
-replace k8s.io/client-go v0.33.3 => k8s.io/client-go v0.0.0-20190620085101-78d2af792bab
-replace k8s.io/api v0.33.3 => k8s.io/api v0.0.0-20190620084959-7cf5895f2711
-replace k8s.io/apimachinery v0.33.3 => k8s.io/apimachinery v0.0.0-20190612205821-1799e75a0719
-replace k8s.io/klog/v2 v2.130.1 => k8s.io/klog/v2 v2.4.0
-replace k8s.io/kubectl v0.33.3 => k8s.io/kubectl v0.15.13-beta.0
+replace k8s.io/client-go v0.33.4 => k8s.io/client-go v0.0.0-20190620085101-78d2af792bab
+replace k8s.io/api v0.33.4 => k8s.io/api v0.0.0-20190620084959-7cf5895f2711
+replace k8s.io/apimachinery v0.33.4 => k8s.io/apimachinery v0.0.0-20190612205821-1799e75a0719
+//replace k8s.io/klog/v2 v2.130.1 => k8s.io/klog/v2 v2.4.0
+//replace k8s.io/kubectl v0.33.4 => k8s.io/kubectl v0.15.13-beta.0
+
 //replace github.com/weibaohui/kom v1.9.10 => github.com/weibaohui/kom v0.2.44-0.20250531071906-8089a4a1fd87
 
 //replace github.com/weibaohui/kom v0.2.29 => github.com/weibaohui/kom v0.2.30-0.20250504082828-c0893145fefa
@@ -158,8 +159,8 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.33.3 // indirect
-	k8s.io/cli-runtime v0.33.3 // indirect
-	k8s.io/component-helpers v0.33.3 // indirect
+	k8s.io/cli-runtime v0.33.4 // indirect
+	k8s.io/component-helpers v0.33.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/utils v0.0.0-20250321185631-1f6e0b77f77e // indirect
 	modernc.org/libc v1.62.1 // indirect
