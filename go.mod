@@ -51,6 +51,11 @@ require (
 	sigs.k8s.io/yaml v1.6.0
 )
 
+replace k8s.io/client-go v0.33.3 => k8s.io/client-go v0.0.0-20190620085101-78d2af792bab
+replace k8s.io/api v0.33.3 => k8s.io/api v0.0.0-20190620084959-7cf5895f2711
+replace k8s.io/apimachinery v0.33.3 => k8s.io/apimachinery v0.0.0-20190612205821-1799e75a0719
+replace k8s.io/klog/v2 v2.130.1 => k8s.io/klog/v2 v2.4.0
+replace k8s.io/kubectl v0.33.3 => k8s.io/kubectl v0.15.13-beta.0
 //replace github.com/weibaohui/kom v1.9.10 => github.com/weibaohui/kom v0.2.44-0.20250531071906-8089a4a1fd87
 
 //replace github.com/weibaohui/kom v0.2.29 => github.com/weibaohui/kom v0.2.30-0.20250504082828-c0893145fefa

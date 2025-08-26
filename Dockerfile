@@ -5,6 +5,7 @@ ARG MODEL
 ARG API_KEY
 ARG API_URL
 WORKDIR /app
+ENV GO_PROXY=https://goproxy.cn
 COPY go.mod go.sum /app/
 RUN go mod download
 COPY . /app
