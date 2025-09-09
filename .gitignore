@@ -35,3 +35,4 @@ data/k8m.db
 dist.zip
 data/
 .qoder/
+vendor
