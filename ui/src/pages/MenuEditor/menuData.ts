@@ -106,6 +106,22 @@ export const initialMenu: MenuItem[] = [
         ],
     },
     {
+        key: 'global_log',
+        title: '日志',
+        icon: 'fa-solid fa-file-alt',
+        order: 6.5,
+        children: [
+            {
+                key: 'global_log_query',
+                title: '日志查询',
+                icon: 'fa-solid fa-file-lines',
+                eventType: 'custom',
+                customEvent: '() => loadJsonPage("/log/global")',
+                order: 1,
+            }
+        ]
+    },
+    {
         key: 'crd',
         title: 'CRD',
         icon: 'fa-solid fa-file-code',
@@ -860,6 +876,14 @@ export const initialMenu: MenuItem[] = [
                 eventType: 'custom',
                 customEvent: '() => loadJsonPage("/admin/config/condition")',
                 order: 9,
+            },
+            {
+                key: 'crd_link_generator',
+                title: 'CRD菜单生成器',
+                icon: 'fa-solid fa-link',
+                eventType: 'custom',
+                customEvent: '() => loadJsonPage("/admin/config/crd_link_generator")',
+                order: 9.5,
             },
             {
                 key: 'sso_config',
