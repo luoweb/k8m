@@ -838,6 +838,14 @@ export const initialMenu: MenuItem[] = [
                 order: 4,
             },
             {
+                key: 'ai_prompt_management',
+                title: 'AI提示词管理',
+                icon: 'fa-solid fa-comment-dots',
+                eventType: 'custom',
+                customEvent: '() => loadJsonPage("/admin/ai_prompt")',
+                order: 4.5,
+            },
+            {
                 key: 'user_management',
                 title: '用户管理',
                 icon: 'fa-solid fa-user-gear',
@@ -900,6 +908,30 @@ export const initialMenu: MenuItem[] = [
                 eventType: 'custom',
                 customEvent: '() => loadJsonPage("/admin/config/ldap_config")',
                 order: 11,
+            },
+            {
+                key: 'operation_audit',
+                title: '操作审计',
+                icon: 'fa-solid fa-clipboard-list',
+                order: 12,
+                children: [
+                    {
+                        key: 'operation_log',
+                        title: '操作日志',
+                        icon: 'fa-solid fa-file-lines',
+                        eventType: 'custom',
+                        customEvent: '() => loadJsonPage("/log/operation")',
+                        order: 1,
+                    },
+                    {
+                        key: 'shell_log',
+                        title: 'Shell日志',
+                        icon: 'fa-solid fa-terminal',
+                        eventType: 'custom',
+                        customEvent: '() => loadJsonPage("/log/shell")',
+                        order: 2,
+                    },
+                ],
             }
 
         ],

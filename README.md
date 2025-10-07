@@ -49,7 +49,7 @@ Qwen2.5-Coder-7B，支持deepseek-ai/DeepSeek-R1-Distill-Qwen-7B模型
 - **Pod 文件管理**：支持 Pod 内文件的浏览、编辑、上传、下载、删除，简化日常操作。
 - **Pod 运行管理**：支持实时查看 Pod 日志，下载日志，并在 Pod 内直接执行 Shell 命令。支持grep -A -B高亮搜索
 - **API开放**:支持创建API KEY，从第三方外部访问，提供swagger接口管理页面。
-- **集群巡检支持**：支持定时巡检、自定义巡检规则，支持lua脚本规则。
+- **集群巡检支持**：支持定时巡检、自定义巡检规则，支持lua脚本规则。支持发送到钉钉群、微信群、飞书群。
 - **CRD 管理**：可自动发现并管理 CRD 资源，提高工作效率。
 - **Helm 市场**：支持Helm自由添加仓库，一键安装、卸载、升级 Helm 应用，支持自动更新。
 - **跨平台支持**：兼容 Linux、macOS 和 Windows，并支持 x86、ARM 等多种架构，确保多平台无缝运行。
@@ -257,7 +257,7 @@ pnpm run dev
 <br><img width="214" alt="Image" src="https://github.com/user-attachments/assets/166db141-42c5-42c4-9964-8e25cf12d04c" />
 
 ## 微信群
-![输入图片说明](https://foruda.gitee.com/images/1758522215690016563/ab02d8f8_77493.png "屏幕截图")
+![输入图片说明](https://foruda.gitee.com/images/1759234568793520473/ccfc8a18_77493.png "屏幕截图")
 ## QQ群
 ![输入图片说明](https://foruda.gitee.com/images/1753099785542398999/184a765a_77493.png "屏幕截图")
 
