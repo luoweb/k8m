@@ -2,6 +2,7 @@ package inspection
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -56,10 +57,8 @@ func (s *AdminScheduleController) SummaryBySchedule(c *gin.Context) {
 
 	// 获取cluster参数
 	clusterBase64 := c.Param("cluster")
-	klog.V(6).Infof("clusterBase64=%s ", clusterBase64)
 
 	if clusterDecode, err := utils.UrlSafeBase64Decode(clusterBase64); err == nil {
-		klog.V(6).Infof("cluster=%s ", cluster)
 		cluster = string(clusterDecode)
 	} else {
 		klog.V(6).Infof("cluster=%s,%v ", cluster, err)
@@ -238,9 +237,18 @@ func (s *AdminScheduleController) SummaryByRecordID(c *gin.Context) {
 		amis.WriteJsonError(c, err)
 		return
 	}
-	summary, summaryErr := sb.SummaryByAI(context.Background(), msg, "")
 
-	err = sb.SaveSummaryBack(recordID, summary, summaryErr)
+	// 将原始巡检结果转换为JSON字符串
+	resultRawBytes, err := json.Marshal(msg)
+	if err != nil {
+		klog.Errorf("序列化原始巡检结果失败: %v", err)
+		resultRawBytes = []byte("{}")
+	}
+	resultRaw := string(resultRawBytes)
+
+	summary, summaryErr := sb.SummaryByAI(context.Background(), msg)
+
+	err = sb.SaveSummaryBack(recordID, summary, summaryErr, resultRaw)
 	if err != nil {
 		amis.WriteJsonError(c, err)
 		return

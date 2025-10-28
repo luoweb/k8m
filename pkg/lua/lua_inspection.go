@@ -38,7 +38,10 @@ func NewLuaInspection(schedule *models.InspectionSchedule, cluster string) *Insp
 func (p *Inspection) registerKubectlFunc() {
 	p.lua.SetGlobal("log", p.lua.NewFunction(logFunc))
 
-	k := kom.DefaultCluster()
+	k := kom.Cluster(p.Cluster)
+	if k == nil {
+		klog.Errorf("巡检 集群【%s】，但是该集群未连接，巡检结果为失败", p.Cluster)
+	}
 
 	ud := p.lua.NewUserData()
 	ud.Value = &Kubectl{k}
@@ -47,16 +50,17 @@ func (p *Inspection) registerKubectlFunc() {
 	// 设置元方法
 	mt := p.lua.NewTypeMetatable("kubectl")
 	p.lua.SetField(mt, "__index", p.lua.SetFuncs(p.lua.NewTable(), map[string]lua.LGFunction{
-		"GVK":               gvkFunc, // kubectl.GVK(group, version, kind) Kind首字母大写
-		"WithLabelSelector": withLabelSelectorFunc,
-		"Name":              withNameFunc,
-		"Namespace":         withNamespaceFunc,
-		"AllNamespace":      withAllNamespaceFunc,
-		"Cache":             withCacheFunc,
-		"List":              listResource,
-		"Doc":               getDoc,
-		"Get":               getResource,
-		"GetLogs":           getLogs,
+		"GVK":                 gvkFunc, // kubectl.GVK(group, version, kind) Kind首字母大写
+		"WithLabelSelector":   withLabelSelectorFunc,
+		"Name":                withNameFunc,
+		"Namespace":           withNamespaceFunc,
+		"AllNamespace":        withAllNamespaceFunc,
+		"Cache":               withCacheFunc,
+		"List":                listResource,
+		"Doc":                 getDoc,
+		"Get":                 getResource,
+		"GetLogs":             getLogs,
+		"GetPodResourceUsage": getPodResourceUsage,
 	}))
 	p.lua.SetMetatable(ud, mt)
 }

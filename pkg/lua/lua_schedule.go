@@ -7,16 +7,48 @@ import (
 	"sync"
 	"time"
 
-	"github.com/robfig/cron/v3"
 	"github.com/weibaohui/k8m/internal/dao"
 	"github.com/weibaohui/k8m/pkg/comm/utils"
 	"github.com/weibaohui/k8m/pkg/constants"
 	"github.com/weibaohui/k8m/pkg/models"
+	"github.com/weibaohui/k8m/pkg/service"
+	"github.com/weibaohui/kom/kom"
 	"gorm.io/gorm"
 	"k8s.io/klog/v2"
 )
 
 type ScheduleBackground struct {
+}
+
+var once sync.Once
+var localTaskManager *TaskManager
+
+var localScheduleBackground *ScheduleBackground
+var sbOnce sync.Once // 仅负责保证 ScheduleBackground 单例非空的 once
+
+// init 在包被导入时执行，用于初始化并启动 TaskManager
+// 注意：init 的执行时机由 Go 运行时决定，无法保证一定在其他组件之前；
+// TaskManager必须先启动，否则在TM中添加、更新、删除任务时会报错
+func init() {
+	localTaskManager = NewTaskManager()
+	// 启动TaskManager
+	localTaskManager.Start()
+}
+func InitClusterInspection() {
+	once.Do(func() {
+		// 确保实例非空后再加载 DB 任务
+		sb := NewScheduleBackground()
+		sb.AddCronJobFromDB()
+		klog.V(6).Infof("新增 集群巡检 定时任务 ")
+	})
+}
+func NewScheduleBackground() *ScheduleBackground {
+	sbOnce.Do(func() {
+		if localScheduleBackground == nil {
+			localScheduleBackground = &ScheduleBackground{}
+		}
+	})
+	return localScheduleBackground
 }
 
 // TriggerTypeManual 表示手动触发
@@ -26,12 +58,23 @@ const TriggerTypeManual = "manual"
 const TriggerTypeCron = "cron"
 
 // RunByCluster 启动一次巡检任务，并记录执行及每个脚本的结果到数据库
-// scheduleID: 可选，定时任务ID（手动触发时为nil）
+// scheduleID: 定时任务ID
 // cluster: 目标集群
 // triggerType: 触发类型（manual/cron）
 func (s *ScheduleBackground) RunByCluster(ctx context.Context, scheduleID *uint, cluster string, triggerType string) (*models.InspectionRecord, error) {
+	k := kom.Cluster(cluster)
+	if k == nil {
+		klog.V(6).Infof("巡检 集群【%s】，但是该集群未连接，尝试连接该集群", cluster)
+		service.ClusterService().Connect(cluster)
+		k = kom.Cluster(cluster)
+		if k == nil {
+			klog.Errorf("巡检 集群【%s】，但是该集群未连接，尝试连接该集群失败，跳过执行", cluster)
+			return nil, fmt.Errorf("巡检 集群【%s】未连接，尝试连接未成功，跳过执行", cluster)
+		}
+		klog.V(6).Infof("巡检 集群【%s】，已连接", cluster)
+	}
 
-	klog.V(6).Infof("StartInspection, scheduleID: %v, cluster: %s", scheduleID, cluster)
+	klog.V(6).Infof("开始巡检, scheduleID: %v, cluster: %s", scheduleID, cluster)
 	// 如果scheduleID 不为空，
 	// 从数据库中读取scheduleName
 	var scheduleName string
@@ -129,22 +172,15 @@ func (s *ScheduleBackground) RunByCluster(ctx context.Context, scheduleID *uint,
 		return db.Select("last_run_time", "error_count")
 	})
 
-	// TODO 记录发送结果
-	_, _ = s.SummaryAndPushToHooksByRecordID(context.Background(), record.ID)
+	// 自动生成总结，包括使用AI
+	s.AutoGenerateSummary(record.ID)
+
+	// 发送webhook通知
+	go func() {
+		_, _ = s.PushToHooksByRecordID(record.ID)
+	}()
+
 	return record, nil
-}
-
-var localCron *cron.Cron
-var once sync.Once
-
-func InitClusterInspection() {
-	once.Do(func() {
-		localCron = cron.New()
-		localCron.Start()
-		klog.V(6).Infof("集群巡检启动")
-		sb := ScheduleBackground{}
-		sb.StartFromDB()
-	})
 }
 
 // IsEventStatusPass 判断事件状态是否为通过
@@ -154,8 +190,8 @@ func (s *ScheduleBackground) IsEventStatusPass(status string) bool {
 	return status == "正常" || status == "pass" || status == "ok" || status == "success" || status == "通过"
 }
 
-// StartFromDB  后台自动执行调度
-func (s *ScheduleBackground) StartFromDB() {
+// AddCronJobFromDB  后台自动执行调度
+func (s *ScheduleBackground) AddCronJobFromDB() {
 
 	// 1、读取数据库中的定义，然后创建
 	sch := models.InspectionSchedule{}
@@ -169,44 +205,16 @@ func (s *ScheduleBackground) StartFromDB() {
 	}
 	var count int
 	for _, schedule := range list {
-		if schedule.Cron != "" {
-			klog.V(6).Infof("注册定时任务: %s", schedule.Cron)
-			// 注册定时任务
-			// 遍历集群
-			cur := schedule
-			entryID, err := localCron.AddFunc(cur.Cron, func() {
-				for _, cluster := range strings.Split(cur.Clusters, ",") {
-					_, _ = s.RunByCluster(context.Background(), &cur.ID, cluster, TriggerTypeCron)
-				}
-			})
-			if err != nil {
-				klog.Errorf("定时任务注册失败%v", err)
-				return
-			}
-			// 更新EntryID
-			schedule.CronRunID = entryID
-			_ = schedule.Save(nil)
-			count += 1
-		}
+		s.Add(schedule.ID)
+		count += 1
 	}
 	klog.V(6).Infof("启动集群巡检任务完成，共启动%d个", count)
 }
 func (s *ScheduleBackground) Remove(scheduleID uint) {
-	sch := models.InspectionSchedule{}
-	sch.ID = scheduleID
-	item, err := sch.GetOne(nil, func(db *gorm.DB) *gorm.DB {
-		return db
-	})
-	if err != nil {
-		klog.Errorf("读取定时任务[id=%d]失败  %v", scheduleID, err)
-		return
-	}
-	if item.CronRunID != 0 {
-		localCron.Remove(item.CronRunID)
-	}
-	klog.V(6).Infof("删除集群定时巡检任务[id=%d]", scheduleID)
-
+	localTaskManager.Remove(fmt.Sprintf("%d", scheduleID))
+	klog.V(6).Infof("移除巡检任务[id=%d]", scheduleID)
 }
+
 func (s *ScheduleBackground) Add(scheduleID uint) {
 	// 1、读取数据库中的定义，然后创建
 	sch := models.InspectionSchedule{}
@@ -215,32 +223,44 @@ func (s *ScheduleBackground) Add(scheduleID uint) {
 		return db.Where("enabled is true")
 	})
 	if err != nil {
-		klog.Errorf("读取定时任务[id=%d]失败  %v", scheduleID, err)
+		klog.Errorf("读取巡检任务[id=%d]失败  %v", scheduleID, err)
 		return
 	}
-	// 先清除，再添加执行
-	if item.CronRunID != 0 {
-		localCron.Remove(item.CronRunID)
-	}
-	if item.Cron != "" {
-		klog.V(6).Infof("注册定时任务: %s", item.Cron)
-		// 注册定时任务
-		// 遍历集群
-		cur := item
 
-		entryID, err := localCron.AddFunc(cur.Cron, func() {
-			for _, cluster := range strings.Split(cur.Clusters, ",") {
-				_, _ = s.RunByCluster(context.Background(), &cur.ID, cluster, TriggerTypeCron)
+	if item.Cron != "" {
+		// 创建局部副本以避免闭包变量捕获问题
+		// 这样确保每个定时任务都有自己独立的数据副本，不会被后续的Add调用影响
+		scheduleIDCopy := item.ID
+		clustersCopy := item.Clusters
+		cronExpr := item.Cron
+
+		// 添加定时任务到TaskManager，而不是立即执行
+		addErr := localTaskManager.Add(fmt.Sprintf("%d", scheduleIDCopy), cronExpr, func(ctx context.Context) {
+			klog.V(6).Infof("定时巡检任务 [%s] 开始执行", item.Name)
+			// 执行巡检任务：逐项检查取消信号，并清洗 cluster 列表
+			clusters := strings.Split(clustersCopy, ",")
+			for _, cluster := range clusters {
+				select {
+				case <-ctx.Done():
+					klog.V(6).Infof("定时巡检任务 [%s] 被取消，停止后续集群", item.Name)
+					return
+				default:
+				}
+				cluster = strings.TrimSpace(cluster)
+				if cluster == "" {
+					continue
+				}
+				_, _ = s.RunByCluster(ctx, &scheduleIDCopy, cluster, TriggerTypeCron)
 			}
+			klog.V(6).Infof("定时巡检任务 [%s] 执行完成", item.Name)
 		})
-		if err != nil {
-			klog.Errorf("定时任务注册失败%v", err)
+		if addErr != nil {
+			klog.Errorf("添加巡检任务[id=%d]失败  %v", scheduleID, addErr)
 			return
 		}
-		// 更新EntryID
-		item.CronRunID = entryID
-		_ = item.Save(nil)
 	}
-	klog.V(6).Infof("启动集群定时巡检任务[id=%d]", scheduleID)
-
+	klog.V(6).Infof("添加巡检任务[id=%d]", scheduleID)
+}
+func (s *ScheduleBackground) Update(scheduleID uint) {
+	s.Add(scheduleID)
 }
