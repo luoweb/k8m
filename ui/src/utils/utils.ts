@@ -101,7 +101,7 @@ export function ProcessK8sUrlWithCluster(url: string, overrideCluster?: string):
     }
 
     // 选择覆盖的 cluster，否则使用本地已选 cluster
-    const originCluster = (overrideCluster && String(overrideCluster)) || localStorage.getItem('cluster') || '';
+    const originCluster = (overrideCluster && String(overrideCluster)) || getCurrentClusterId();
     const cluster = originCluster ? toUrlSafeBase64(originCluster) : '';
     // 未选择集群时，不插入 cluster 段，避免生成 /k8s/cluster//...
     if (!cluster) {
@@ -149,4 +149,126 @@ export function GetValueByPath<T = any>(obj: any, path: string, defaultValue?: T
         return defaultValue as T;
     }
     return result;
+}
+
+/**
+ * 获取当前选中的集群ID（从 URL 哈希路径中解析）
+ * 解析位置形如：`#/k/ClusterID/xxxx/yyy`，其中第二段为集群ID。
+ * 使用 URL 安全 Base64 解码，不兼容旧的 `#/cluster/...` 路径。
+ * @returns {string} 当前集群ID，未选择时返回空字符串
+ */
+export function getCurrentClusterId(): string {
+    if (typeof window === 'undefined') return '';
+
+    // 读取哈希并去除查询参数
+    const rawHash = window.location.hash || '';
+    const hashBody = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
+    const pathOnly = hashBody.split('?')[0] || '';
+
+    // 统一成以 '/' 开头的路径，便于分段
+    const normPath = pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
+    const parts = normPath.split('/');
+    const idx = parts.indexOf('k');
+
+    if (idx >= 0 && parts.length > idx + 1 && parts[idx + 1]) {
+        const encoded = parts[idx + 1];
+        const decoded = fromUrlSafeBase64(encoded);
+        // 严格按 Base64 解码，失败则视为未选择
+        return decoded || '';
+    }
+    return '';
+}
+
+export function getCurrentClusterIdInBase64(): string {
+    return  getCurrentClusterId() ? toUrlSafeBase64(getCurrentClusterId()) : '';
+}
+
+/**
+ * 设置当前选中的集群ID（写入到 URL 哈希路径）
+ * 目标位置：`#/k/ClusterID/xxxx/yyy`。若已有 k 段则替换其后 ID；
+ * 若不存在，则在现有哈希路径前插入 `k/ClusterID`，保留剩余路径与查询参数。
+ * @param {string} clusterId 要设置的集群ID
+ */
+export function setCurrentClusterId(clusterId: string): void {
+    if (typeof window === 'undefined' || !clusterId) return;
+
+    const encoded = toUrlSafeBase64(clusterId);
+    const rawHash = window.location.hash || '';
+    const hashBody = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
+
+    const hasQuery = hashBody.includes('?');
+    const queryPart = hasQuery ? hashBody.slice(hashBody.indexOf('?')) : '';
+    let pathOnly = (hasQuery ? hashBody.slice(0, hashBody.indexOf('?')) : hashBody) || '';
+
+    // 统一为以 '/' 开头的路径
+    pathOnly = pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
+    // 去掉前导 '/'
+    const segs = pathOnly.replace(/^\/+/,'').split('/').filter(s => s.length > 0);
+    const idx = segs.indexOf('k');
+    if (idx >= 0) {
+        // 如果存在 k 段，移除该段以及紧随其后的 ID 段（若存在）
+        segs.splice(idx, (segs.length > idx + 1) ? 2 : 1);
+    }
+    // 始终将 k/encoded 放到最前面
+    const newSegs = ['k', encoded, ...segs];
+    const newPath = '/' + newSegs.join('/');
+
+    window.location.hash = `#${newPath}${queryPart}`;
+    console.info('已切换到指定集群，更新哈希路径');
+}
+
+/**
+ * 获取当前选中的命名空间（按集群维度隔离）
+ * - 从 localStorage 读取 `selectedNS_${clusterId}`
+ * - 若未设置或无法读取则返回空字符串
+ * @param {string} [overrideClusterId] 可选，指定集群ID，默认读取当前URL中的集群ID
+ * @returns {string} 当前选中的命名空间
+ */
+export function getSelectedNS(overrideClusterId?: string): string {
+    const clusterId = (overrideClusterId && String(overrideClusterId)) || getCurrentClusterId();
+    if (!clusterId) return '';
+    const key = `selectedNS_${clusterId}`;
+    try {
+        const value = localStorage.getItem(key);
+        return value || '';
+    } catch (e) {
+        console.warn('无法读取选中的命名空间:', e);
+        return '';
+    }
+}
+
+/**
+ * 设置当前选中的命名空间（按集群维度隔离）
+ * - 将命名空间写入 localStorage 的 `selectedNS_${clusterId}` 键
+ * @param {string} ns 要设置的命名空间
+ * @param {string} [overrideClusterId] 可选，指定集群ID，默认读取当前URL中的集群ID
+ */
+export function setSelectedNS(ns: string, overrideClusterId?: string): void {
+    const clusterId = (overrideClusterId && String(overrideClusterId)) || getCurrentClusterId();
+    if (!clusterId) return;
+    const key = `selectedNS_${clusterId}`;
+    try {
+        localStorage.setItem(key, ns);
+    } catch (e) {
+        console.warn('无法保存选中的命名空间:', e);
+    }
+}
+
+
+
+// 将方法暴露到window对象上，以便在脚本中使用
+declare global {
+    interface Window {
+        getCurrentClusterId: typeof getCurrentClusterId;
+        setCurrentClusterId: typeof setCurrentClusterId;
+        getSelectedNS: typeof getSelectedNS;
+        setSelectedNS: typeof setSelectedNS;
+    }
+}
+
+if (typeof window !== 'undefined') {
+    window.getCurrentClusterId = getCurrentClusterId;
+    window.setCurrentClusterId = setCurrentClusterId;
+    window.getSelectedNS = getSelectedNS;
+    window.setSelectedNS = setSelectedNS;
 }

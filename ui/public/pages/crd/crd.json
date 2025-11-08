@@ -193,7 +193,7 @@
           "level": "link",
           "actionType": "url",
           "blank": true,
-          "url": "/#/apply/apply?kind=${kind}"
+          "url": "/#/k/${''|selectedClusterBase64}/apply/apply?kind=${kind}"
         }
       ]
     },
@@ -220,17 +220,13 @@
                   "id": "cluster",
                   "searchable": true,
                   "source": "/params/cluster/option_list",
-                  "value": "${ls:cluster}",
+                  "value": "${''|selectedCluster}",
                   "onEvent": {
                     "change": {
                       "actions": [
                         {
                           "actionType": "custom",
-                          "script": "localStorage.setItem('cluster', event.data.value)"
-                        },
-                        {
-                          "actionType": "custom",
-                          "script": "window.location.reload();"
+                          "script": "window.setCurrentClusterId(event.data.value)"
                         }
                       ]
                     }
@@ -554,7 +550,7 @@
                   "icon": "fas fa-list text-primary",
                   "body": "实例列表",
                   "blank": true,
-                  "href": "/#/crd/namespaced_cr?kind=${spec.names.kind}&group=${spec.group}&version=${spec.versions[0].name}",
+                  "href": "/#/k/${''|selectedClusterBase64}/crd/namespaced_cr?kind=${spec.names.kind}&group=${spec.group}&version=${spec.versions[0].name}",
                   "visibleOn": "spec.scope=='Namespaced'"
                 },
                 {
@@ -562,7 +558,7 @@
                   "icon": "fas fa-list text-primary",
                   "body": "实例列表",
                   "blank": true,
-                  "href": "/#/crd/cluster_cr?kind=${spec.names.kind}&group=${spec.group}&version=${spec.versions[0].name}",
+                  "href": "/#/k/${''|selectedClusterBase64}/crd/cluster_cr?kind=${spec.names.kind}&group=${spec.group}&version=${spec.versions[0].name}",
                   "visibleOn": "spec.scope=='Cluster'"
                 }
               ]

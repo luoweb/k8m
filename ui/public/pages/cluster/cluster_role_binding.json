@@ -193,7 +193,7 @@
           "level": "link",
           "actionType": "url",
           "blank": true,
-          "url": "/#/apply/apply?kind=${kind}"
+          "url": "/#/k/${''|selectedClusterBase64}/apply/apply?kind=${kind}"
         }
       ]
     },
@@ -220,17 +220,13 @@
                   "id": "cluster",
                   "searchable": true,
                   "source": "/params/cluster/option_list",
-                  "value": "${ls:cluster}",
+                  "value": "${''|selectedCluster}",
                   "onEvent": {
                     "change": {
                       "actions": [
                         {
                           "actionType": "custom",
-                          "script": "localStorage.setItem('cluster', event.data.value)"
-                        },
-                        {
-                          "actionType": "custom",
-                          "script": "window.location.reload();"
+                          "script": "window.setCurrentClusterId(event.data.value)"
                         }
                       ]
                     }
@@ -570,7 +566,7 @@
               "type": "link",
               "body": "<strong class='text-green-500 font-black'>[${roleRef.kind}]</strong>${roleRef.name}",
               "blank": false,
-              "href": "/#/cluster/cluster_role?metadata[name]=${roleRef.name}"
+              "href": "/#/k/${''|selectedClusterBase64}/cluster/cluster_role?metadata[name]=${roleRef.name}"
             }
           ],
           "searchable": {
@@ -591,7 +587,7 @@
                 "type": "link",
                 "body": "<strong class='text-green-500 font-black'>[${kind}]</strong>${name}",
                 "blank": false,
-                "href": "${kind == 'ServiceAccount' ? '/#/ns/service_account?metadata[name]=' + name : ''}"
+                "href": "${kind == 'ServiceAccount' ? '/#/k/${''|selectedClusterBase64}/ns/service_account?metadata[name]=' + name : ''}"
               }
             ]
           },

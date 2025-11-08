@@ -66,11 +66,7 @@
                   "actions": [
                     {
                       "actionType": "custom",
-                      "script": "localStorage.setItem('cluster', event.data.cluster_id)"
-                    },
-                    {
-                      "actionType": "custom",
-                      "script": "window.location.reload();"
+                      "script": "window.setCurrentClusterId(event.data.cluster_id)"
                     }
                   ]
                 }
@@ -106,7 +102,7 @@
           "name": "current",
           "label": "是否当前集群",
           "type": "tpl",
-          "tpl": "<% if (localStorage.getItem('cluster') === data.cluster_id) { %><span class='label label-success'>当前集群</span><% if (data.clusterConnectStatus !== 'connected') { %> ⚠️ <% } %><% } %>"
+          "tpl": "<% if (window.getCurrentClusterId() === data.cluster_id) { %><span class='label label-success'>当前集群</span><% if (data.clusterConnectStatus !== 'connected') { %> ⚠️ <% } %><% } %>"
         },
         {
           "name": "clusterConnectStatus",
@@ -129,6 +125,13 @@
             }
           },
           "popOverEnableOn": "this.err"
+        },
+        {
+          "name": "heartbeat_history",
+          "label": "心跳状态",
+          "type": "tpl",
+          "width": "140px",
+          "tpl": "<% if (Array.isArray(data.heartbeat_history) && data.heartbeat_history.length) { data.heartbeat_history.forEach(function(h){ %><span title='时间：<%=h.time%>\n结果：<% if (h.success) { %>成功<% } else { %>失败<% } %>' style='display:inline-block;width:10px;height:10px;border-radius:50%;background-color:<% if (h.success) { %>#10b981<% } else { %>#ef4444<% } %>;margin-right:6px;'></span><% }); } else { %><span class='text-muted'>—</span><% } %>"
         },
         {
           "name": "k8s_gpt_problems_count",

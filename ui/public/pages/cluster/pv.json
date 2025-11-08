@@ -193,7 +193,7 @@
           "level": "link",
           "actionType": "url",
           "blank": true,
-          "url": "/#/apply/apply?kind=${kind}"
+          "url": "/#/k/${''|selectedClusterBase64}/apply/apply?kind=${kind}"
         }
       ]
     },
@@ -220,17 +220,13 @@
                   "id": "cluster",
                   "searchable": true,
                   "source": "/params/cluster/option_list",
-                  "value": "${ls:cluster}",
+                  "value": "${''|selectedCluster}",
                   "onEvent": {
                     "change": {
                       "actions": [
                         {
                           "actionType": "custom",
-                          "script": "localStorage.setItem('cluster', event.data.value)"
-                        },
-                        {
-                          "actionType": "custom",
-                          "script": "window.location.reload();"
+                          "script": "window.setCurrentClusterId(event.data.value)"
                         }
                       ]
                     }
@@ -777,7 +773,7 @@
               "type": "link",
               "body": "${spec.claimRef ? spec.claimRef.namespace + '/' + spec.claimRef.name : ''}",
               "blank": false,
-              "href": "/#/ns/pvc?metadata.name=${spec.claimRef.name}"
+              "href": "/#/k/${''|selectedClusterBase64}/ns/pvc?metadata.name=${spec.claimRef.name}"
             }
           ],
           "searchable": {
