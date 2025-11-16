@@ -430,6 +430,8 @@ func (c *clusterService) disconnectWithOption(clusterID string, stopReconnect bo
 // 中文函数注释：幂等清理指定集群的连接状态与资源，并停止自动重连；用于外部显式断开场景。
 func (c *clusterService) Disconnect(clusterID string) {
 	c.disconnectWithOption(clusterID, true)
+	// 集成 Lease（断开后删除租约，仅责任者删除）
+	_ = LeaseManager().EnsureOnDisconnect(context.Background(), clusterID)
 }
 
 // Scan 扫描集群
@@ -795,6 +797,9 @@ func (c *clusterService) RegisterCluster(clusterConfig *ClusterConfig) (bool, er
 		c.callbackRegisterFunc(clusterConfig)
 	}
 
+	// 集成 Lease（连接成功后创建租约并占有）
+	_ = LeaseManager().EnsureOnConnect(context.Background(), clusterID)
+
 	return true, nil
 }
 
@@ -824,6 +829,20 @@ func (c *clusterService) LoadRestConfig(config *ClusterConfig) error {
 
 	}
 	config.restConfig = restConfig
+
+	if config.IsAWSEKS {
+		theaws := kom.Clusters().GetClusterById(config.ClusterID)
+		if theaws != nil && theaws.AWSAuthProvider != nil {
+			if token, _, errT := theaws.AWSAuthProvider.GetToken(context.Background()); errT == nil {
+				config.restConfig.BearerToken = token
+				klog.V(6).Infof("成功为 AWS EKS 集群[%s]设置 Bearer Token", config.ClusterID)
+			} else {
+				klog.V(4).Infof("获取 AWS EKS 集群[%s] Token 失败: %v", config.ClusterID, errT)
+			}
+		} else {
+			klog.V(4).Infof("无法为 AWS EKS 集群[%s]获取 Token：集群或 AWSAuthProvider 不可用", config.ClusterID)
+		}
+	}
 
 	// 校验集群是否可连接
 	clientset, err := kubernetes.NewForConfig(restConfig)
@@ -977,14 +996,14 @@ func (c *clusterService) RegisterAWSEKSCluster(config *komaws.EKSAuthConfig) (*C
 
 		// 添加到集群列表
 		c.AddToClusterList(clusterConfig)
-		
+
 		// 校验连通性并设置ServerVersion
 		if err := c.LoadRestConfig(clusterConfig); err != nil {
 			clusterConfig.ClusterConnectStatus = constants.ClusterConnectStatusFailed
 			clusterConfig.Err = err.Error()
 			return nil, fmt.Errorf("AWS EKS集群连通性校验失败: %w", err)
 		}
-		
+
 		clusterConfig.ClusterConnectStatus = constants.ClusterConnectStatusConnected
 		clusterConfig.Err = ""
 		klog.V(4).Infof("成功注册AWS EKS集群: %s [%s]", config.ClusterName, clusterID)
