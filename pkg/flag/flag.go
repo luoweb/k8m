@@ -19,43 +19,35 @@ var config *Config
 var once sync.Once
 
 type Config struct {
-	Port                 int     // gin 监听端口
-	Host                 string  // gin 监听地址
-	KubeConfig           string  // KUBECONFIG文件路径
-	ApiKey               string  // OPENAI_API_KEY
-	ApiURL               string  // OPENAI_API_URL
-	ApiModel             string  // OPENAI_MODEL
-	Debug                bool    // 调试模式，同步修改所有的debug模式
-	LogV                 int     // klog的日志级别klog.V(this)
-	InCluster            bool    // 是否集群内模式
-	LoginType            string  // password,oauth,token,.. 登录方式，默认为password
-	EnableTempAdmin      bool    // 是否启用临时管理员账户配置
-	AdminUserName        string  // 管理员用户名，启用临时管理员账户配置后生效
-	AdminPassword        string  // 管理员密码，启用临时管理员账户配置后生效
-	JwtTokenSecret       string  // JWT token secret
-	NodeShellImage       string  // nodeShell 镜像
-	KubectlShellImage    string  // kubectlShell 镜像
-	ImagePullTimeout     int     // 镜像拉取超时时间（秒）
-	PrintConfig          bool    // 是否打印配置信息
-	Version              string  // 版本号，由编译时自动注入
-	GitCommit            string  // git commit, 由编译时自动注入
-	GitTag               string  // git tag, 由编译时自动注入
-	GitRepo              string  // git仓库地址, 由编译时自动注入
-	BuildDate            string  // 编译时间, 由编译时自动注入
-	EnableAI             bool    // 是否启用AI功能，默认开启
-	EnableSwagger        bool    // 是否启用Swagger文档，默认开启
-	ConnectCluster       bool    // 启动程序后，是否自动连接发现的集群，默认关闭
-	UseBuiltInModel      bool    // 是否使用内置大模型参数，默认开启
-	ProductName          string  // 产品名称，默认为K8M
-	ResourceCacheTimeout int     // 资源缓存时间（秒）
-	Temperature          float32 // 模型温度
-	TopP                 float32 //  模型topP参数
-	MaxIterations        int32   //  模型自动对话的最大轮数
-	MaxHistory           int32   //  模型对话上下文历史记录数
-	AnySelect            bool    // 是否开启任意选择，默认开启
-	DBDriver             string  // 数据库驱动类型: sqlite、mysql、postgresql等
-	SqlitePath           string  // sqlite 数据库路径
-	SqliteDSN            string  // sqlite 自定义 DSN 参数配置，设置后优先使用
+	Port       int    // chi 监听端口
+	Host       string // chi 监听地址
+	KubeConfig string // KUBECONFIG文件路径
+
+	Debug             bool   // 调试模式，同步修改所有的debug模式
+	LogV              int    // klog的日志级别klog.V(this)
+	InCluster         bool   // 是否集群内模式
+	LoginType         string // password,oauth,token,.. 登录方式，默认为password
+	EnableTempAdmin   bool   // 是否启用临时管理员账户配置
+	AdminUserName     string // 管理员用户名，启用临时管理员账户配置后生效
+	AdminPassword     string // 管理员密码，启用临时管理员账户配置后生效
+	JwtTokenSecret    string // JWT token secret
+	NodeShellImage    string // nodeShell 镜像
+	KubectlShellImage string // kubectlShell 镜像
+	ImagePullTimeout  int    // 镜像拉取超时时间（秒）
+	PrintConfig       bool   // 是否打印配置信息
+	Version           string // 版本号，由编译时自动注入
+	GitCommit         string // git commit, 由编译时自动注入
+	GitTag            string // git tag, 由编译时自动注入
+	GitRepo           string // git仓库地址, 由编译时自动注入
+	BuildDate         string // 编译时间, 由编译时自动注入
+
+	ConnectCluster       bool   // 启动程序后，是否自动连接发现的集群，默认关闭
+	ProductName          string // 产品名称，默认为K8M
+	ResourceCacheTimeout int    // 资源缓存时间（秒）
+
+	DBDriver   string // 数据库驱动类型: sqlite、mysql、postgresql等
+	SqlitePath string // sqlite 数据库路径
+	SqliteDSN  string // sqlite 自定义 DSN 参数配置，设置后优先使用
 
 	// MySQL 配置
 	MysqlHost      string // mysql 主机
@@ -88,14 +80,6 @@ type Config struct {
 	LdapAnonymousQuery  int    // 是否允许匿名查询LDAP
 	LdapUserField       string // LDAP用户字段
 	LdapLogin2AuthClose bool   // LDAP登录后是否关闭认证
-	HelmCachePath       string // Helm缓存路径
-	HelmUpdateCron      string // Helm更新定时执行 cron 表达式
-
-	// 集群管理参数
-	HeartbeatIntervalSeconds    int // 心跳间隔时间（秒）
-	HeartbeatFailureThreshold   int // 心跳失败阈值
-	ReconnectMaxIntervalSeconds int // 重连最大间隔时间（秒）
-	MaxRetryAttempts            int // 最大重试次数，默认100次
 
 	// Lease 同步参数
 	LeaseNamespace            string // Lease 所在命名空间，默认自动检测
@@ -154,11 +138,6 @@ func (c *Config) InitFlags() {
 	// 默认kubeconfig为~/.kube/config
 	defaultKubeConfig := getEnv("KUBECONFIG", filepath.Join(homedir.HomeDir(), ".kube", "config"))
 
-	// 默认apiKey为环境变量OPENAI_API_KEY/OPENAI_API_URL/
-	defaultApiKey := getEnv("OPENAI_API_KEY", "")
-	defaultApiURL := getEnv("OPENAI_API_URL", "")
-	defaultModel := getEnv("OPENAI_MODEL", "Qwen/Qwen2.5-7B-Instruct")
-
 	// 默认登录方式为password
 	defaultLoginType := getEnv("LOGIN_TYPE", "password")
 	defaultAdminUserName := getEnv("ADMIN_USERNAME", "")
@@ -185,19 +164,12 @@ func (c *Config) InitFlags() {
 	defaultSqlitePath := getEnv("SQLITE_PATH", "./data/k8m.db")
 	defaultSqliteDSN := getEnv("SQLITE_DSN", "") // 默认为空，表示使用默认 DSN 配置
 
-	// 默认开启任意选择
-	defaultAnySelect := getEnvAsBool("ANY_SELECT", true)
-
 	// 默认不打印配置
 	defaultPrintConfig := getEnvAsBool("PRINT_CONFIG", false)
-	// 默认开启AI功能
-	defaultEnableAI := getEnvAsBool("ENABLE_AI", true)
-	// 默认开启Swagger文档
-	defaultEnableSwagger := getEnvAsBool("ENABLE_SWAGGER", true)
+
 	// 默认关闭启动连接集群
 	defaultConnectCluster := getEnvAsBool("CONNECT_CLUSTER", false)
-	// 默认使用内置大模型参数
-	defaultUseBuiltInModel := getEnvAsBool("USE_BUILTIN_MODEL", true)
+
 	// 默认不启用临时管理员账户配置
 	defaultEnableTempAdmin := getEnvAsBool("ENABLE_TEMP_ADMIN", false)
 
@@ -209,9 +181,6 @@ func (c *Config) InitFlags() {
 
 	// 默认资源缓存时间为60秒
 	defaultResourceCacheTimeout := getEnvAsInt("RESOURCE_CACHE_TIMEOUT", 60)
-
-	// 默认模型自动对话的最大轮数为10
-	defaultMaxIterations := getEnvAsInt32("MAX_ITERATIONS", 10)
 
 	// MySQL 配置默认值
 	defaultMysqlHost := getEnv("MYSQL_HOST", "127.0.0.1")
@@ -233,13 +202,6 @@ func (c *Config) InitFlags() {
 	defaultPgSSLMode := getEnv("PG_SSLMODE", "disable")
 	defaultPgTimeZone := getEnv("PG_TIMEZONE", "Asia/Shanghai")
 	defaultPgLogMode := getEnvAsBool("PG_LOGMODE", false)
-
-	// 默认AI关闭思考过程输出为false
-	defaultThink := getEnvAsBool("THINK", false)
-
-	// 默认HELM配置
-	defaultHelmCachePath := getEnv("HELM_CACHE_PATH", "/tmp/helm-cache")
-	defaultHelmUpdateCron := getEnv("HELM_UPDATE_CRON", "0 */6 * * *")
 
 	// 参数配置
 	pflag.BoolVarP(&c.Debug, "debug", "d", defaultDebug, "调试模式")
@@ -264,17 +226,6 @@ func (c *Config) InitFlags() {
 	pflag.BoolVar(&c.InCluster, "in-cluster", defaultInCluster, "是否自动注册纳管宿主集群，默认启用")
 	pflag.BoolVar(&c.ConnectCluster, "connect-cluster", defaultConnectCluster, "启动程序后，是否自动连接发现的集群，默认关闭  ")
 	pflag.IntVar(&c.ResourceCacheTimeout, "resource-cache-timeout", defaultResourceCacheTimeout, "资源缓存时间（秒），默认60秒")
-
-	// AI配置
-	pflag.BoolVar(&c.EnableAI, "enable-ai", defaultEnableAI, "是否启用AI功能，默认开启")
-	pflag.BoolVar(&c.EnableSwagger, "enable-swagger", defaultEnableSwagger, "是否启用Swagger文档，默认开启")
-	pflag.BoolVar(&c.AnySelect, "any-select", defaultAnySelect, "是否开启任意选择，默认开启")
-	pflag.BoolVar(&c.Think, "think", defaultThink, "AI是否开启思考过程输出，true时显示思考过程，建议生产环境开启")
-	pflag.Int32Var(&c.MaxIterations, "max-iterations", defaultMaxIterations, "模型自动对话的最大轮数，默认10轮")
-	pflag.BoolVar(&c.UseBuiltInModel, "use-builtin-model", defaultUseBuiltInModel, "是否使用内置大模型参数，默认开启")
-	pflag.StringVarP(&c.ApiKey, "chatgpt-key", "k", defaultApiKey, "大模型的自定义API Key")
-	pflag.StringVarP(&c.ApiURL, "chatgpt-url", "u", defaultApiURL, "大模型的自定义API URL")
-	pflag.StringVarP(&c.ApiModel, "chatgpt-model", "m", defaultModel, "大模型的自定义模型名称")
 
 	// 数据库配置
 	pflag.StringVar(&c.DBDriver, "db-driver", getEnv("DB_DRIVER", "sqlite"), "数据库驱动类型: sqlite、mysql、postgresql等")
@@ -301,16 +252,6 @@ func (c *Config) InitFlags() {
 	pflag.StringVar(&c.PgSSLMode, "pg-sslmode", defaultPgSSLMode, "PostgreSQL SSL模式")
 	pflag.StringVar(&c.PgTimeZone, "pg-timezone", defaultPgTimeZone, "PostgreSQL时区")
 	pflag.BoolVar(&c.PgLogMode, "pg-logmode", defaultPgLogMode, "PostgreSQL日志模式")
-
-	// Helm 配置
-	pflag.StringVar(&c.HelmCachePath, "helm-cache-path", defaultHelmCachePath, "Helm缓存路径")
-	pflag.StringVar(&c.HelmUpdateCron, "helm-update-cron", defaultHelmUpdateCron, "Helm更新定时执行 cron 表达式")
-
-	// 集群管理参数
-	pflag.IntVar(&c.HeartbeatIntervalSeconds, "heartbeat-interval", getEnvAsInt("HEARTBEAT_INTERVAL", 30), "心跳间隔时间（秒），默认30秒")
-	pflag.IntVar(&c.HeartbeatFailureThreshold, "heartbeat-failure-threshold", getEnvAsInt("HEARTBEAT_FAILURE_THRESHOLD", 3), "心跳失败阈值，默认3次")
-	pflag.IntVar(&c.ReconnectMaxIntervalSeconds, "reconnect-max-interval", getEnvAsInt("RECONNECT_MAX_INTERVAL", 3600), "重连最大间隔时间（秒），默认3600秒")
-	pflag.IntVar(&c.MaxRetryAttempts, "max-retry-attempts", getEnvAsInt("MAX_RETRY_ATTEMPTS", 100), "最大重试次数，默认100次")
 
 	// Lease 同步参数
 	pflag.StringVar(&c.HostClusterID, "host-cluster-id", getEnv("HOST_CLUSTER_ID", ""), "为空会使用InCluster模式，否则会使用HostClusterID指定的集群。集群ID从k8m界面-多集群管理中复制")
@@ -358,16 +299,6 @@ func getEnvAsBool(key string, defaultValue bool) bool {
 	if value, exists := os.LookupEnv(key); exists {
 		if boolValue, err := strconv.ParseBool(value); err == nil {
 			return boolValue
-		}
-	}
-	return defaultValue
-}
-
-// getEnvAsInt32 返回指定环境变量的 int32 类型值，不存在或解析失败时返回默认值。
-func getEnvAsInt32(key string, defaultValue int32) int32 {
-	if value, exists := os.LookupEnv(key); exists {
-		if intValue, err := strconv.ParseInt(value, 10, 32); err == nil {
-			return int32(intValue)
 		}
 	}
 	return defaultValue

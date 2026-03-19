@@ -1,24 +1,26 @@
 package pod
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"sync"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 	"github.com/weibaohui/k8m/pkg/comm/utils"
 	"github.com/weibaohui/k8m/pkg/comm/utils/amis"
+	"github.com/weibaohui/k8m/pkg/response"
 	"github.com/weibaohui/kom/kom"
 	v1 "k8s.io/api/core/v1"
 )
 
 type PortController struct{}
 
-func RegisterPortRoutes(api *gin.RouterGroup) {
+func RegisterPortRoutes(api chi.Router) {
 	ctrl := &PortController{}
-	api.POST("/pod/port_forward/ns/:ns/name/:name/container/:container_name/pod_port/:pod_port/local_port/:local_port/start", ctrl.StartPortForward)
-	api.POST("/pod/port_forward/ns/:ns/name/:name/container/:container_name/pod_port/:pod_port/stop", ctrl.StopPortForward)
-	api.GET("/pod/port_forward/ns/:ns/name/:name/port/list", ctrl.PortForwardList)
+	api.Post("/pod/port_forward/ns/{ns}/name/{name}/container/{container_name}/pod_port/{pod_port}/local_port/{local_port}/start", response.Adapter(ctrl.StartPortForward))
+	api.Post("/pod/port_forward/ns/{ns}/name/{name}/container/{container_name}/pod_port/{pod_port}/stop", response.Adapter(ctrl.StopPortForward))
+	api.Get("/pod/port_forward/ns/{ns}/name/{name}/port/list", response.Adapter(ctrl.PortForwardList))
 }
 
 // PortInfo 结构体用于描述端口转发信息
@@ -50,7 +52,7 @@ var portForwardTableMutex sync.RWMutex
 // @Param local_port path string true "本地端口"
 // @Success 200 {object} string
 // @Router /k8s/cluster/{cluster}/pod/port_forward/ns/{ns}/name/{name}/container/{container_name}/pod_port/{pod_port}/local_port/{local_port}/start [post]
-func (pc *PortController) StartPortForward(c *gin.Context) {
+func (pc *PortController) StartPortForward(c *response.Context) {
 	ctx := amis.GetContextWithUser(c)
 	name := c.Param("name")
 	ns := c.Param("ns")
@@ -70,55 +72,11 @@ func (pc *PortController) StartPortForward(c *gin.Context) {
 		return
 	}
 
-	// 前端是界面点选而来
-	// // 检查pod是否存在
-	// var pod v1.Pod
-	// err = kom.Cluster(selectedCluster).WithContext(ctx).
-	// 	Resource(&v1.Pod{}).
-	// 	Namespace(ns).
-	// 	Name(name).
-	// 	Get(&pod).Error
-	//
-	// if err != nil {
-	// 	amis.WriteJsonError(c, err)
-	// 	return
-	// }
-
-	stopCh := make(chan struct{})
-	key := getMapKey(selectedCluster, ns, name, containerName, podPort)
-
-	if localPort == "" {
-		localPort = getRandomPort()
+	_, err = StartPortForwardByPod(ctx, selectedCluster, ns, name, containerName, podPort, localPort)
+	if err != nil {
+		amis.WriteJsonError(c, err)
+		return
 	}
-	go func() {
-		portForwardTableMutex.Lock()
-		portForwardTable[key] = &PortInfo{
-			Cluster:       selectedCluster,
-			Namespace:     ns,
-			Name:          name,
-			ContainerName: containerName, // 可后续补充
-			LocalPort:     localPort,
-			PodPort:       podPort,
-			Status:        "running",
-			StopCh:        stopCh,
-		}
-		portForwardTableMutex.Unlock()
-		err = kom.Cluster(selectedCluster).WithContext(ctx).
-			Resource(&v1.Pod{}).
-			Namespace(ns).
-			Name(name).
-			Ctl().Pod().
-			ContainerName(containerName).
-			PortForward(localPort, podPort, stopCh).Error
-		if err != nil {
-			portForwardTableMutex.Lock()
-			if pf, ok := portForwardTable[key]; ok {
-				pf.Status = "failed"
-			}
-			portForwardTableMutex.Unlock()
-		}
-
-	}()
 	amis.WriteJsonOK(c)
 }
 
@@ -131,7 +89,7 @@ func (pc *PortController) StartPortForward(c *gin.Context) {
 // @Param pod_port path string true "Pod端口"
 // @Success 200 {object} string
 // @Router /k8s/cluster/{cluster}/pod/port_forward/ns/{ns}/name/{name}/container/{container_name}/pod_port/{pod_port}/stop [post]
-func (pc *PortController) StopPortForward(c *gin.Context) {
+func (pc *PortController) StopPortForward(c *response.Context) {
 	name := c.Param("name")
 	ns := c.Param("ns")
 	containerName := c.Param("container_name")
@@ -143,14 +101,16 @@ func (pc *PortController) StopPortForward(c *gin.Context) {
 	}
 
 	key := getMapKey(selectedCluster, ns, name, containerName, podPort)
+	var stopCh chan struct{}
 	portForwardTableMutex.Lock()
-
 	if pf, ok := portForwardTable[key]; ok {
-		pf.StopCh <- struct{}{}
+		stopCh = pf.StopCh
+		pf.StopCh = nil
 		pf.Status = "stopped"
 		pf.LocalPort = ""
 	}
 	portForwardTableMutex.Unlock()
+	closeStopChSafely(stopCh)
 
 	amis.WriteJsonOK(c)
 }
@@ -162,7 +122,7 @@ func (pc *PortController) StopPortForward(c *gin.Context) {
 // @Param name path string true "Pod名称"
 // @Success 200 {object} string
 // @Router /k8s/cluster/{cluster}/pod/port_forward/ns/{ns}/name/{name}/port/list [get]
-func (pc *PortController) PortForwardList(c *gin.Context) {
+func (pc *PortController) PortForwardList(c *response.Context) {
 	ctx := amis.GetContextWithUser(c)
 	name := c.Param("name")
 	ns := c.Param("ns")
@@ -241,4 +201,98 @@ func getRandomPort() string {
 			return portStr
 		}
 	}
+}
+
+// StartPortForwardByPod 通过 Pod 信息启动端口转发。
+// localPort 为空时将随机分配一个本地端口并返回。
+func StartPortForwardByPod(ctx context.Context, selectedCluster, ns, podName, containerName, podPort, localPort string) (string, error) {
+	if _, err := strconv.Atoi(podPort); err != nil {
+		return "", fmt.Errorf("无效的容器组端口号: %s", podPort)
+	}
+	if localPort == "" {
+		localPort = getRandomPort()
+	}
+	localPortInt, err := strconv.Atoi(localPort)
+	if err != nil || localPortInt < 1 || localPortInt > 65535 {
+		return "", fmt.Errorf("无效的本地端口号: %s", localPort)
+	}
+
+	stopCh := make(chan struct{})
+	key := getMapKey(selectedCluster, ns, podName, containerName, podPort)
+
+	var oldStopCh chan struct{}
+	portForwardTableMutex.Lock()
+	if old, ok := portForwardTable[key]; ok {
+		oldStopCh = old.StopCh
+		old.StopCh = nil
+		old.Status = "stopped"
+		old.LocalPort = ""
+	}
+	portForwardTable[key] = &PortInfo{
+		Cluster:       selectedCluster,
+		Namespace:     ns,
+		Name:          podName,
+		ContainerName: containerName,
+		LocalPort:     localPort,
+		PodPort:       podPort,
+		Status:        "running",
+		StopCh:        stopCh,
+	}
+	portForwardTableMutex.Unlock()
+	closeStopChSafely(oldStopCh)
+
+	go func() {
+		err := kom.Cluster(selectedCluster).WithContext(ctx).
+			Resource(&v1.Pod{}).
+			Namespace(ns).
+			Name(podName).
+			Ctl().Pod().
+			ContainerName(containerName).
+			PortForward(localPort, podPort, stopCh).Error
+		if err != nil {
+			portForwardTableMutex.Lock()
+			if pf, ok := portForwardTable[key]; ok {
+				pf.Status = "failed"
+			}
+			portForwardTableMutex.Unlock()
+		}
+	}()
+
+	return localPort, nil
+}
+
+// StopPortForwardByPod 通过 Pod 信息停止端口转发。
+func StopPortForwardByPod(selectedCluster, ns, podName, containerName, podPort string) {
+	key := getMapKey(selectedCluster, ns, podName, containerName, podPort)
+	var stopCh chan struct{}
+	portForwardTableMutex.Lock()
+	if pf, ok := portForwardTable[key]; ok {
+		stopCh = pf.StopCh
+		pf.StopCh = nil
+		pf.Status = "stopped"
+		pf.LocalPort = ""
+	}
+	portForwardTableMutex.Unlock()
+	closeStopChSafely(stopCh)
+}
+
+// GetPortForwardStatus 获取指定 Pod 端口转发的状态与本地端口。
+func GetPortForwardStatus(selectedCluster, ns, podName, containerName, podPort string) (status, localPort string, ok bool) {
+	key := getMapKey(selectedCluster, ns, podName, containerName, podPort)
+	portForwardTableMutex.RLock()
+	defer portForwardTableMutex.RUnlock()
+	if pf, exists := portForwardTable[key]; exists {
+		return pf.Status, pf.LocalPort, true
+	}
+	return "", "", false
+}
+
+func closeStopChSafely(stopCh chan struct{}) {
+	if stopCh == nil {
+		return
+	}
+	defer func() {
+		_ = recover()
+	}()
+	close(stopCh)
 }

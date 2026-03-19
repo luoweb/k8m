@@ -33,7 +33,7 @@ const InspectionEventListComponent: React.FC<InspectionEventListComponentProps> 
         setLoading(true);
         setError(null);
         fetcher({
-            url: `/admin/inspection/schedule/record/id/${record_id}/event/list`,
+            url: `/admin/plugins/inspection/schedule/record/id/${record_id}/event/list`,
             method: 'get',
         })
             .then((res: any) => {
@@ -105,7 +105,7 @@ const InspectionEventListComponent: React.FC<InspectionEventListComponentProps> 
                                     {expandedItems[itemKey] && (
                                         <div style={{ marginTop: 8, marginBottom: 8 }}>
                                             <WebSocketMarkdownViewerComponent
-                                                url="/ai/chat/k8s_gpt/resource"
+                                                url="/mgm/plugins/ai/chat/k8s_gpt/resource"
                                                 params={{
                                                     kind: item.kind,
                                                     name: item.name,

@@ -43,13 +43,90 @@ LINUX_PLATFORMS := \
     linux/amd64
 
 # 默认目标
-.PHONY: all
+.PHONY: all help dev dev-backend dev-frontend build-frontend prepare-embed cleanup-embed test tidy deps install-tools
 all: build
+
+
+.PHONY: help
+help:
+	@echo "可用的目标:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-25s\033[0m %s\n", $$1, $$2}'
+
+
+.PHONY: dev
+dev: ## 同时启动后端和前端开发服务器
+	@echo "启动开发服务器..."
+	@make dev-frontend &
+	@sleep 2
+	@make dev-backend
+
+
+.PHONY: dev-backend
+dev-backend: ## 启动后端开发服务器 (Air 热重载)
+	@echo "启动后端服务..."
+	@which air || go install github.com/air-verse/air@latest
+	@air
+
+
+.PHONY: dev-frontend
+dev-frontend: ## 启动前端开发服务器
+	@echo "启动前端服务..."
+	@cd ui && npm run dev
+
+
+.PHONY: build-frontend
+build-frontend: ## 构建前端静态文件
+	@echo "构建前端..."
+	@cd ui && npm install --silent
+	@cd ui && npm run build
+
+
+.PHONY: prepare-embed
+prepare-embed: ## 准备嵌入目录（复制前端文件）
+	@echo "准备嵌入目录..."
+	@mkdir -p internal/embed/ui/dist
+	@rm -rf internal/embed/ui/dist/*
+	@cp -r ui/dist/* internal/embed/ui/dist/
+	@echo "前端文件已复制到 internal/embed/ui/dist/"
+
+
+.PHONY: cleanup-embed
+cleanup-embed: ## 清理嵌入目录
+	@echo "清理嵌入目录..."
+	@rm -rf internal/embed/ui/dist/*
+	@touch internal/embed/ui/dist/.keep
+	@echo "嵌入目录已清理"
+
+
+.PHONY: build-embed
+build-embed: build-frontend prepare-embed cleanup-embed ## 完整构建：前端+嵌入
+	@echo "前端嵌入完成！"
+
+
+.PHONY: test
+test: ## 运行测试
+	go test -v ./...
+
+
+.PHONY: tidy
+tidy: ## 整理依赖
+	go mod tidy
+
+
+.PHONY: deps
+deps: ## 下载依赖
+	go mod download
+	cd ui && npm install
+
+
+.PHONY: install-tools
+install-tools: ## 安装开发工具
+	go install github.com/air-verse/air@latest
 
 
 # 为当前平台构建可执行文件
 .PHONY: docker
-docker:
+docker: ## 构建 Docker 镜像
 	@echo "使用 $(BUILD_TOOL) 构建镜像..."
 	@$(BUILD_TOOL) buildx build \
            --build-arg VERSION=$(VERSION) \
@@ -65,7 +142,7 @@ docker:
 
 # 为当前平台构建可执行文件
 .PHONY: build
-build:
+build: ## 为当前平台构建可执行文件
 	@echo "构建当前平台可执行文件..."
 	@mkdir -p $(OUTPUT_DIR)
 	@GOOS=$(shell go env GOOS) GOARCH=$(shell go env GOARCH) \
@@ -74,7 +151,7 @@ build:
 
 # 为所有指定的平台和架构构建可执行文件
 .PHONY: build-all
-build-all:
+build-all: ## 为所有平台构建可执行文件
 	@echo "为所有平台构建可执行文件..."
 	@mkdir -p $(OUTPUT_DIR)
 	@for platform in $(PLATFORMS); do \
@@ -100,7 +177,7 @@ build-all:
 
 # 为所有指定的平台和架构构建可执行文件
 .PHONY: build-linux
-build-linux:
+build-linux: ## 为Linux平台构建可执行文件
 	@echo "为所有平台构建可执行文件..."
 	@mkdir -p $(OUTPUT_DIR)
 	@for platform in $(LINUX_PLATFORMS); do \
@@ -120,25 +197,12 @@ build-linux:
 
 # 清理生成的可执行文件
 .PHONY: clean
-clean:
+clean: ## 清理生成的可执行文件
 	@echo "清理生成的可执行文件..."
 	@rm -rf $(OUTPUT_DIR)
 
 # 运行当前平台的可执行文件（仅限 Unix 系统）
 .PHONY: run
-run: build
+run: build ## 运行当前平台的可执行文件
 	@echo "运行可执行文件..."
 	@./$(OUTPUT_DIR)/$(BINARY_NAME)
-
-
-# 帮助信息
-.PHONY: help
-help:
-	@echo "可用的目标:"
-	@echo "  docker      构建容器镜像 (使用 BUILD_TOOL 指定的构建工具，默认为 podman)"
-	@echo "  build       为当前平台构建可执行文件"
-	@echo "  build-linux 为Linux平台构建可执行文件"
-	@echo "  build-all   为所有平台构建可执行文件"
-	@echo "  clean       清理生成的可执行文件"
-	@echo "  run         运行当前平台的可执行文件"
-	@echo "  help        显示帮助信息"

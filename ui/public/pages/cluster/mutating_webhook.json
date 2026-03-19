@@ -100,7 +100,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/example/field",
+                              "url": "/mgm/plugins/ai/chat/example/field",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -176,7 +176,7 @@
             "body": [
               {
                 "type": "websocketMarkdownViewer",
-                "url": "/ai/chat/example",
+                "url": "/mgm/plugins/ai/chat/example",
                 "params": {
                   "kind": "${kind}",
                   "group": "${group}",
@@ -201,19 +201,10 @@
             "body": [
               {
                 "type": "k8sGPT",
-                "api": "/k8s/k8s_gpt/kind/${kind}/run"
+                "api": "/k8s/plugins/k8sgpt/kind/${kind}/run"
               }
             ]
           }
-        },
-        {
-          "label": "创建",
-          "icon": "fas fa-dharmachakra text-primary",
-          "type": "button",
-          "level": "link",
-          "actionType": "url",
-          "blank": true,
-          "url": "/#/k/${''|selectedClusterBase64}/apply/apply?kind=${kind}"
         }
       ]
     },
@@ -355,7 +346,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/describe",
+                              "url": "/k8s/plugins/ai/chat/describe",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -494,7 +485,7 @@
                                       "body": [
                                         {
                                           "type": "websocketMarkdownViewer",
-                                          "url": "/ai/chat/example/field",
+                                          "url": "/mgm/plugins/ai/chat/example/field",
                                           "params": {
                                             "kind": "${kind}",
                                             "group": "${group}",

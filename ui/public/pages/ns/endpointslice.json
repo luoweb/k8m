@@ -101,7 +101,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/example/field",
+                              "url": "/mgm/plugins/ai/chat/example/field",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -177,7 +177,7 @@
             "body": [
               {
                 "type": "websocketMarkdownViewer",
-                "url": "/ai/chat/example",
+                "url": "/mgm/plugins/ai/chat/example",
                 "params": {
                   "kind": "${kind}",
                   "group": "${group}",
@@ -186,15 +186,6 @@
               }
             ]
           }
-        },
-        {
-          "label": "创建",
-          "icon": "fas fa-dharmachakra text-primary",
-          "type": "button",
-          "level": "link",
-          "actionType": "url",
-          "blank": true,
-          "url": "/#/k/${''|selectedClusterBase64}/apply/apply?kind=${kind}"
         }
       ]
     },
@@ -377,7 +368,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/describe",
+                              "url": "/k8s/plugins/ai/chat/describe",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -516,7 +507,7 @@
                                       "body": [
                                         {
                                           "type": "websocketMarkdownViewer",
-                                          "url": "/ai/chat/example/field",
+                                          "url": "/mgm/plugins/ai/chat/example/field",
                                           "params": {
                                             "kind": "${kind}",
                                             "group": "${group}",
@@ -638,7 +629,7 @@
                             "type": "link",
                             "icon": "fa-solid fa-arrow-up-right-from-square text-blue-500",
                             "body": "查看",
-                            "href": "/#/k/${''|selectedClusterBase64}/ns/pod?metadata[name]=${targetRef.name}&metadata[namespace]=${targetRef.namespace}",
+                            "href": "/#/k/${''|selectedClusterMd5}/ns/pod?metadata[name]=${targetRef.name}&metadata[namespace]=${targetRef.namespace}",
                             "blank": false
                           }
                         ]

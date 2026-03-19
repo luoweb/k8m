@@ -4,11 +4,11 @@ import (
 	"errors"
 
 	"github.com/duke-git/lancet/v2/slice"
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 	"github.com/weibaohui/k8m/internal/dao"
-	"github.com/weibaohui/k8m/pkg/comm/utils"
 	"github.com/weibaohui/k8m/pkg/comm/utils/amis"
 	"github.com/weibaohui/k8m/pkg/models"
+	"github.com/weibaohui/k8m/pkg/response"
 	"github.com/weibaohui/k8m/pkg/service"
 	"gorm.io/gorm"
 )
@@ -16,22 +16,27 @@ import (
 type Controller struct {
 }
 
-func RegisterAdminClusterRoutes(admin *gin.RouterGroup) {
+// RegisterAdminClusterRoutes 注册集群管理路由
+
+func RegisterAdminClusterRoutes(r chi.Router) {
 	ctrl := &Controller{}
-	admin.POST("/cluster/scan", ctrl.Scan)
-	admin.GET("/cluster/file/option_list", ctrl.FileOptionList)
-	admin.POST("/cluster/kubeconfig/save", ctrl.SaveKubeConfig)
-	admin.POST("/cluster/kubeconfig/remove", ctrl.RemoveKubeConfig)
-	admin.POST("/cluster/:cluster/disconnect", ctrl.Disconnect)
-	admin.POST("/cluster/aws/save", ctrl.SaveAWSEKSCluster)
-	admin.POST("/cluster/token/save", ctrl.SaveTokenCluster)
-	admin.GET("/cluster/config/:id", ctrl.GetClusterConfig)
-	admin.POST("/cluster/config/save", ctrl.SaveClusterConfig)
+	r.Post("/cluster/scan", response.Adapter(ctrl.Scan))
+	r.Get("/cluster/file/option_list", response.Adapter(ctrl.FileOptionList))
+	r.Post("/cluster/kubeconfig/save", response.Adapter(ctrl.SaveKubeConfig))
+	r.Post("/cluster/kubeconfig/remove", response.Adapter(ctrl.RemoveKubeConfig))
+	r.Post("/cluster/{cluster}/disconnect", response.Adapter(ctrl.Disconnect))
+	r.Post("/cluster/aws/save", response.Adapter(ctrl.SaveAWSEKSCluster))
+	r.Post("/cluster/token/save", response.Adapter(ctrl.SaveTokenCluster))
+	r.Get("/cluster/config/{id}", response.Adapter(ctrl.GetClusterConfig))
+	r.Post("/cluster/config/save", response.Adapter(ctrl.SaveClusterConfig))
 }
-func RegisterUserClusterRoutes(mgm *gin.RouterGroup) {
+
+// RegisterUserClusterRoutes 注册用户集群路由
+
+func RegisterUserClusterRoutes(r chi.Router) {
 	ctrl := &Controller{}
 	// 前端用户点击重连接按钮
-	mgm.POST("/cluster/:cluster/reconnect", ctrl.Reconnect)
+	r.Post("/cluster/{cluster}/reconnect", response.Adapter(ctrl.Reconnect))
 }
 
 // @Summary 获取文件类型的集群选项
@@ -39,11 +44,11 @@ func RegisterUserClusterRoutes(mgm *gin.RouterGroup) {
 // @Security BearerAuth
 // @Success 200 {object} string
 // @Router /admin/cluster/file/option_list [get]
-func (a *Controller) FileOptionList(c *gin.Context) {
+func (a *Controller) FileOptionList(c *response.Context) {
 	clusters := service.ClusterService().AllClusters()
 
 	if len(clusters) == 0 {
-		amis.WriteJsonData(c, gin.H{
+		amis.WriteJsonData(c, response.H{
 			"options": make([]map[string]string, 0),
 		})
 		return
@@ -62,7 +67,7 @@ func (a *Controller) FileOptionList(c *gin.Context) {
 		})
 	}
 
-	amis.WriteJsonData(c, gin.H{
+	amis.WriteJsonData(c, response.H{
 		"options": options,
 	})
 }
@@ -72,7 +77,7 @@ func (a *Controller) FileOptionList(c *gin.Context) {
 // @Security BearerAuth
 // @Success 200 {object} string
 // @Router /admin/cluster/scan [post]
-func (a *Controller) Scan(c *gin.Context) {
+func (a *Controller) Scan(c *response.Context) {
 	service.ClusterService().Scan()
 	amis.WriteJsonData(c, "ok")
 }
@@ -80,12 +85,12 @@ func (a *Controller) Scan(c *gin.Context) {
 // @Summary 重新连接集群
 // @Description 重新连接一个已断开的集群
 // @Security BearerAuth
-// @Param cluster path string true "Base64编码的集群ID"
+// @Param cluster path string true "集群标识（MD5）"
 // @Success 200 {object} string "已执行，请稍后刷新"
 // @Router /mgm/cluster/{cluster}/reconnect [post]
-func (a *Controller) Reconnect(c *gin.Context) {
-	clusterBase64 := c.Param("cluster")
-	clusterID, err := utils.DecodeBase64(clusterBase64)
+func (a *Controller) Reconnect(c *response.Context) {
+	clusterIdentifier := c.Param("cluster")
+	clusterID, err := service.ClusterService().ResolveClusterID(clusterIdentifier)
 	if err != nil {
 		amis.WriteJsonError(c, err)
 		return
@@ -97,12 +102,12 @@ func (a *Controller) Reconnect(c *gin.Context) {
 // @Summary 断开集群连接
 // @Description 断开一个正在运行的集群的连接
 // @Security BearerAuth
-// @Param cluster path string true "Base64编码的集群ID"
+// @Param cluster path string true "集群标识（MD5）"
 // @Success 200 {object} string "已执行，请稍后刷新"
 // @Router /admin/cluster/{cluster}/disconnect [post]
-func (a *Controller) Disconnect(c *gin.Context) {
-	clusterBase64 := c.Param("cluster")
-	clusterID, err := utils.DecodeBase64(clusterBase64)
+func (a *Controller) Disconnect(c *response.Context) {
+	clusterIdentifier := c.Param("cluster")
+	clusterID, err := service.ClusterService().ResolveClusterID(clusterIdentifier)
 	if err != nil {
 		amis.WriteJsonError(c, err)
 		return
@@ -121,7 +126,7 @@ func (a *Controller) Disconnect(c *gin.Context) {
 // @Security BearerAuth
 // @Success 200 {object} models.KubeConfig
 // @Router /admin/cluster/config/{id} [get]
-func (a *Controller) GetClusterConfig(c *gin.Context) {
+func (a *Controller) GetClusterConfig(c *response.Context) {
 	id := c.Param("id")
 	if id == "" {
 		amis.WriteJsonError(c, errors.New("集群ID不能为空"))
@@ -162,7 +167,7 @@ func (a *Controller) GetClusterConfig(c *gin.Context) {
 // @Security BearerAuth
 // @Success 200 {object} string
 // @Router /admin/cluster/config/save [post]
-func (a *Controller) SaveClusterConfig(c *gin.Context) {
+func (a *Controller) SaveClusterConfig(c *response.Context) {
 	var configData struct {
 		ID       uint    `json:"id" binding:"required"`
 		ProxyURL string  `json:"proxyURL"`
@@ -199,7 +204,7 @@ func (a *Controller) SaveClusterConfig(c *gin.Context) {
 		amis.WriteJsonError(c, err)
 		return
 	}
-	
+
 	// 更新已加载集群的配置参数
 	if err := service.ClusterService().UpdateClusterConfig(configData.ID, configData.ProxyURL, configData.Timeout, configData.QPS, configData.Burst); err != nil {
 		// 记录错误但不影响保存操作的成功响应
@@ -207,7 +212,7 @@ func (a *Controller) SaveClusterConfig(c *gin.Context) {
 		// 下次重新扫描时会自动同步
 		// 这里可以考虑记录日志
 	}
-	
+
 	// 执行一下扫描
 	service.ClusterService().ScanClustersInDB()
 

@@ -1,0 +1,42 @@
+package constants
+
+// AIPromptType AI提示词类型
+type AIPromptType string
+
+const (
+	// AIPromptTypeEvent 事件分析类型
+	AIPromptTypeEvent AIPromptType = "Event"
+
+	// AIPromptTypeDescribe 资源描述分析类型
+	AIPromptTypeDescribe AIPromptType = "Describe"
+
+	// AIPromptTypeExample 示例类型
+	AIPromptTypeExample AIPromptType = "Example"
+
+	// AIPromptTypeFieldExample 字段示例类型
+	AIPromptTypeFieldExample AIPromptType = "FieldExample"
+
+	// AIPromptTypeResource 资源类型
+	AIPromptTypeResource AIPromptType = "Resource"
+
+	// AIPromptTypeK8sGPTResource K8sGPT资源类型
+	AIPromptTypeK8sGPTResource AIPromptType = "K8sGPTResource"
+
+	// AIPromptTypeAnySelection 任意选择类型
+	AIPromptTypeAnySelection AIPromptType = "AnySelection"
+
+	// AIPromptTypeAnyQuestion 任意问题类型
+	AIPromptTypeAnyQuestion AIPromptType = "AnyQuestion"
+
+	// AIPromptTypeCron Cron表达式类型
+	AIPromptTypeCron AIPromptType = "Cron"
+
+	// AIPromptTypeLogSummary 日志总结类型
+	AIPromptTypeLogSummary AIPromptType = "LogSummary"
+
+	// AIPromptTypeLogAsk 日志问答类型
+	AIPromptTypeLogAsk AIPromptType = "LogAsk"
+
+	// AIPromptTypeYamlGenerate YAML生成类型
+	AIPromptTypeYamlGenerate AIPromptType = "YamlGenerate"
+)

@@ -12,7 +12,7 @@ import FormatBytes from "@/components/Amis/custom/FormatBytes.ts";
 import FormatLsShortDate from "@/components/Amis/custom/FormatLsShortDate.ts";
 import K8sDate from '@/components/Amis/custom/K8sDate.ts';
 import SelectedNs from "@/components/Amis/custom/SelectedNs.ts";
-import SelectedCluster, { SelectedClusterBase64 } from "@/components/Amis/custom/SelectedCluster.ts";
+import SelectedCluster, { SelectedClusterMd5 } from "@/components/Amis/custom/SelectedCluster.ts";
 import XTermComponent from "@/components/Amis/custom/XTerm.tsx";
 import K8sAgeComponent from "@/components/Amis/custom/K8sAge.tsx";
 import K8sPodReadyComponent from "@/components/Amis/custom/K8sPodReady.tsx";
@@ -22,7 +22,7 @@ import WebSocketViewerComponent from "@/components/Amis/custom/WebSocketViewer.t
 import WebSocketChatGPT from "@/components/Amis/custom/WebSocketChatGPT.tsx";
 import MonacoEditorWithForm from "@/components/Amis/custom/MonacoEditorWithForm.tsx";
 import GlobalTextSelector from '@/layout/TextSelectionPopover';
-import HistoryRecordsComponent from '@/components/Amis/custom/YamlApplyer/YamlApplyer.tsx';
+import YamlEditorComponent from '@/components/Amis/custom/YamlEditor/YamlEditor.tsx';
 import DiffEditorComponent from '@/components/Amis/custom/DiffEditor/index.tsx';
 import DeploymentRevisionDiffEditor from '@/components/Amis/custom/DiffEditor/DeploymentRevisonDiffEditor.tsx';
 import PodLogViewerComponent from '@/components/Amis/custom/LogView/PodLogViewer';
@@ -39,6 +39,7 @@ import InspectionSummaryComponent from '@/components/Amis/custom/InspectionSumma
 import InspectionEventListComponent from '@/components/Amis/custom/InspectionEventList.tsx'
 import ClusterSummaryView from "@/components/Amis/custom/cluster/ClusterSummaryView.tsx";
 import ImageBatchUpdateComponent from "@/components/Amis/custom/K8sBatchUpdateImages.tsx";
+import KubeconfigDownloadButton from '@/components/Amis/custom/KubeconfigDownloadButton.tsx';
 // 注册自定义组件
 registerRenderer({ type: 'k8sTextConditions', component: k8sTextConditionsComponent })
 registerRenderer({ type: 'nodeRoles', component: NodeRolesComponent })
@@ -62,8 +63,7 @@ registerRenderer({ type: 'xterm', component: XTermComponent })
 registerRenderer({ type: 'chatgpt', component: WebSocketChatGPT })
 // @ts-ignore
 registerRenderer({ type: 'mEditor', component: MonacoEditorWithForm })
-// @ts-ignore
-registerRenderer({ type: 'historyRecord', component: HistoryRecordsComponent })
+registerRenderer({ type: 'yamlEditor', component: YamlEditorComponent })
 
 // @ts-ignore
 registerRenderer({ type: 'diffEditor', component: DiffEditorComponent })
@@ -94,6 +94,8 @@ registerRenderer({ type: 'inspectionEventList', component: InspectionEventListCo
 registerRenderer({ type: 'clusterSummaryView', component: ClusterSummaryView })
 //@ts-ignore
 registerRenderer({ type: 'imageBatchUpdate', component: ImageBatchUpdateComponent })
+//@ts-ignore
+registerRenderer({ type: 'kubeconfigDownloadButton', component: KubeconfigDownloadButton })
 
 
 // 注册过滤器
@@ -106,7 +108,7 @@ registerFilter("formatLsShortDate", FormatLsShortDate)
 registerFilter("k8sDate", K8sDate)
 registerFilter("selectedNs", SelectedNs)
 registerFilter("selectedCluster", SelectedCluster)
-registerFilter("selectedClusterBase64", SelectedClusterBase64)
+registerFilter("selectedClusterMd5", SelectedClusterMd5)
 
 interface Props {
     schema: Schema

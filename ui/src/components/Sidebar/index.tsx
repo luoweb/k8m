@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { MenuItem } from '@/types/menu';
 import { initialMenu } from '@/pages/MenuEditor/menuData';
 import type { MenuProps } from 'antd';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useCRDStatus } from '@/hooks/useCRDStatus';
 import { shouldShowMenuItem } from '@/utils/menuVisibility';
-import { getCurrentClusterId, toUrlSafeBase64 } from '@/utils/utils';
+import { getCurrentClusterId, normalizeClusterIdentifier } from '@/utils/utils';
+import { fetcher } from '@/components/Amis/fetcher';
 
 type AntdMenuItem = Required<MenuProps>['items'][number];
 
@@ -17,17 +18,51 @@ const Sidebar = () => {
     const navigate = useNavigate();
 
     // 使用自定义hooks
-    const { userRole, menuData } = useUserRole();
+    const { userRole, menuData, groups } = useUserRole();
     const { isGatewayAPISupported, isOpenKruiseSupported, isIstioSupported } = useCRDStatus();
+    const [pluginMenus, setPluginMenus] = useState<MenuItem[]>([]);
 
     // 创建菜单可见性上下文
     const visibilityContext = {
         userRole,
+        groups,
         menuData,
         isGatewayAPISupported,
         isOpenKruiseSupported,
         isIstioSupported
     };
+
+    // 拉取插件菜单并缓存
+    useEffect(() => {
+        const fetchPluginMenus = async () => {
+            try {
+                const resp = await fetcher({
+                    url: '/params/plugin/menus',
+                    method: 'get'
+                });
+                if (resp?.data && typeof resp.data === 'object') {
+                    const data = resp.data.data as MenuItem[] | string | null | undefined;
+                    if (Array.isArray(data)) {
+                        setPluginMenus(data);
+                    } else if (typeof data === 'string') {
+                        try {
+                            const parsed = JSON.parse(data);
+                            if (Array.isArray(parsed)) {
+                                setPluginMenus(parsed as MenuItem[]);
+                            }
+                        } catch (e) {
+                            // ignore parse error
+                        }
+                    }
+                }
+            } catch (error) {
+                // 非平台管理员或接口不可用时，忽略错误
+                console.warn('获取插件菜单失败，将不合并插件菜单:', error);
+                setPluginMenus([]);
+            }
+        };
+        fetchPluginMenus();
+    }, []);
 
 
     // 转换函数：将 initialMenu 格式转换为 Antd Menu 格式
@@ -38,16 +73,16 @@ const Sidebar = () => {
             .map((item): AntdMenuItem => {
                 /**
                  * 跳转到指定页面路径
-                 * 在跳转前，始终在路径前加上 `k/<clusterID>` 前缀（clusterID 为 URL 安全 Base64 编码）。
+                 * 在跳转前，始终在路径前加上 `k/<clusterID>` 前缀（clusterID 为 MD5 编码）。
                  * 例如：传入 `/admin`，最终跳转为 `#/k/<clusterID>/admin`。
                  * 若未选择集群，则按原路径跳转。
                  */
                 const loadJsonPage = (path: string) => {
                     const clusterId = getCurrentClusterId();
                     if (clusterId) {
-                        const encoded = toUrlSafeBase64(clusterId);
+                        const normalized = normalizeClusterIdentifier(clusterId);
                         const purePath = path.startsWith('/') ? path : `/${path}`;
-                        navigate(`/k/${encoded}${purePath}`);
+                        navigate(`/k/${normalized}${purePath}`);
                     } else {
                         navigate(path);
                     }
@@ -121,7 +156,7 @@ const Sidebar = () => {
         if (menuData) {
             // 如果是数组，直接使用
             if (Array.isArray(menuData) && menuData.length > 0) {
-                return menuData as MenuItem[];
+                return [...(menuData as MenuItem[]), ...pluginMenus];
             }
 
             // 如果是字符串，尝试解析
@@ -131,7 +166,7 @@ const Sidebar = () => {
                     try {
                         const parsed = JSON.parse(raw);
                         if (Array.isArray(parsed) && parsed.length > 0) {
-                            return parsed as MenuItem[];
+                            return [...(parsed as MenuItem[]), ...pluginMenus];
                         }
                     } catch (error) {
                         console.warn('Failed to parse menuData string, falling back to initialMenu:', error);
@@ -139,7 +174,7 @@ const Sidebar = () => {
                 }
             }
         }
-        return initialMenu;
+        return [...initialMenu, ...pluginMenus];
     };
 
     // 使用 useMemo 缓存转换结果，依赖状态变化

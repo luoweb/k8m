@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/duke-git/lancet/v2/slice"
-	"github.com/gin-gonic/gin"
 	"github.com/weibaohui/k8m/pkg/comm/utils"
 	"github.com/weibaohui/k8m/pkg/comm/utils/amis"
 	"github.com/weibaohui/k8m/pkg/constants"
+	"github.com/weibaohui/k8m/pkg/response"
 	"github.com/weibaohui/k8m/pkg/service"
 	"github.com/weibaohui/kom/kom"
 )
@@ -18,13 +18,13 @@ import (
 // @Security BearerAuth
 // @Success 200 {object} string
 // @Router /params/cluster/option_list [get]
-func (pc *Controller) ClusterOptionList(c *gin.Context) {
+func (pc *Controller) ClusterOptionList(c *response.Context) {
 	user := amis.GetLoginUser(c)
 
 	clusters := service.ClusterService().AllClusters()
 
 	if len(clusters) == 0 {
-		amis.WriteJsonData(c, gin.H{
+		amis.WriteJsonData(c, response.H{
 			"options": make([]map[string]string, 0),
 		})
 		return
@@ -32,7 +32,7 @@ func (pc *Controller) ClusterOptionList(c *gin.Context) {
 	if !service.UserService().IsUserPlatformAdmin(user) {
 		userCluster, err := service.UserService().GetClusterNames(user)
 		if err != nil {
-			amis.WriteJsonData(c, gin.H{
+			amis.WriteJsonData(c, response.H{
 				"options": make([]map[string]string, 0),
 			})
 			return
@@ -51,12 +51,12 @@ func (pc *Controller) ClusterOptionList(c *gin.Context) {
 		}
 		options = append(options, map[string]any{
 			"label": fmt.Sprintf("%s %s", flag, name),
-			"value": name,
+			"value": cluster.ClusterMD,
 			// "disabled": cluster.ServerVersion == "",
 		})
 	}
 
-	amis.WriteJsonData(c, gin.H{
+	amis.WriteJsonData(c, response.H{
 		"options": options,
 	})
 }
@@ -66,14 +66,14 @@ func (pc *Controller) ClusterOptionList(c *gin.Context) {
 // @Security BearerAuth
 // @Success 200 {object} string
 // @Router /params/cluster/all [get]
-func (pc *Controller) ClusterTableList(c *gin.Context) {
+func (pc *Controller) ClusterTableList(c *response.Context) {
 	user := amis.GetLoginUser(c)
 
 	clusters := service.ClusterService().AllClusters()
 	if !service.UserService().IsUserPlatformAdmin(user) {
 		userCluster, err := service.UserService().GetClusterNames(user)
 		if err != nil {
-			amis.WriteJsonData(c, gin.H{
+			amis.WriteJsonData(c, response.H{
 				"options": make([]map[string]string, 0),
 			})
 			return
@@ -85,6 +85,7 @@ func (pc *Controller) ClusterTableList(c *gin.Context) {
 	// 增加cluster.NotAfter
 	configs := service.ClusterService().ConnectedClusters() // 优化：移到循环外部
 	for _, cluster := range clusters {
+		cluster.GetClusterID()
 		// InCluster AWS
 		if !(cluster.IsInCluster || cluster.IsAWSEKS) && slice.ContainBy(configs, func(item *service.ClusterConfig) bool {
 			return item.ClusterID == cluster.ClusterID

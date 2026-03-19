@@ -101,7 +101,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/example/field",
+                              "url": "/mgm/plugins/ai/chat/example/field",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -177,7 +177,7 @@
             "body": [
               {
                 "type": "websocketMarkdownViewer",
-                "url": "/ai/chat/example",
+                "url": "/mgm/plugins/ai/chat/example",
                 "params": {
                   "kind": "${kind}",
                   "group": "${group}",
@@ -202,19 +202,10 @@
             "body": [
               {
                 "type": "k8sGPT",
-                "api": "/k8s/k8s_gpt/kind/${kind}/run"
+                "api": "/k8s/plugins/k8sgpt/kind/${kind}/run"
               }
             ]
           }
-        },
-        {
-          "label": "创建",
-          "icon": "fas fa-dharmachakra text-primary",
-          "type": "button",
-          "level": "link",
-          "actionType": "url",
-          "blank": true,
-          "url": "/#/k/${''|selectedClusterBase64}/apply/apply?kind=${kind}"
         }
       ]
     },
@@ -539,7 +530,7 @@
         {
           "type": "operation",
           "label": "操作",
-          "width": 120,
+          "width": 160,
           "buttons": [
             {
               "type": "button",
@@ -569,7 +560,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/describe",
+                              "url": "/k8s/plugins/ai/chat/describe",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -708,7 +699,7 @@
                                       "body": [
                                         {
                                           "type": "websocketMarkdownViewer",
-                                          "url": "/ai/chat/example/field",
+                                          "url": "/mgm/plugins/ai/chat/example/field",
                                           "params": {
                                             "kind": "${kind}",
                                             "group": "${group}",
@@ -775,6 +766,155 @@
               }
             },
             {
+              "type": "button",
+              "icon": "fas fa-random text-primary",
+              "tooltip": "端口转发",
+              "actionType": "drawer",
+              "drawer": {
+                "closeOnEsc": true,
+                "closeOnOutside": true,
+                "size": "xl",
+                "title": "${metadata.name} 端口转发 (ESC 关闭)",
+                "body": [
+                  {
+                    "type": "crud",
+                    "id": "detailSvcPortForwardList",
+                    "name": "detailSvcPortForwardList",
+                    "headerToolbar": [
+                      "reload",
+                      {
+                        "type": "pagination",
+                        "align": "right"
+                      },
+                      {
+                        "type": "statistics",
+                        "align": "right"
+                      },
+                      {
+                        "type": "switch-per-page",
+                        "align": "right"
+                      }
+                    ],
+                    "loadDataOnce": true,
+                    "syncLocation": false,
+                    "perPage": 10,
+                    "api": "get:/k8s/service/port_forward/ns/$metadata.namespace/name/$metadata.name/port/list",
+                    "columns": [
+                      {
+                        "type": "operation",
+                        "label": "操作",
+                        "buttons": [
+                          {
+                            "type": "button",
+                            "icon": "fas fa-random text-primary",
+                            "label": "转发",
+                            "actionType": "dialog",
+                            "dialog": {
+                              "title": "端口转发",
+                              "body": [
+                                {
+                                  "type": "form",
+                                  "api": {
+                                    "url": "/k8s/service/port_forward/ns/$metadata.namespace/name/$metadata.name/svc_port/${svc_port}/start",
+                                    "method": "post",
+                                    "data": {
+                                      "local_port": "${local_port}"
+                                    }
+                                  },
+                                  "body": [
+                                    {
+                                      "type": "switch",
+                                      "name": "specify_port",
+                                      "label": "指定端口"
+                                    },
+                                    {
+                                      "type": "input-number",
+                                      "name": "local_port",
+                                      "label": "转发端口",
+                                      "visibleOn": "this.specify_port == true",
+                                      "min": 1,
+                                      "max": 65535
+                                    }
+                                  ],
+                                  "onEvent": {
+                                    "submitSucc": {
+                                      "actions": [
+                                        {
+                                          "actionType": "reload",
+                                          "componentId": "detailSvcPortForwardList"
+                                        },
+                                        {
+                                          "actionType": "closeDrawer"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "actionType": "ajax",
+                            "icon": "fas fa-stop text-primary",
+                            "label": "关闭",
+                            "api": "post:/k8s/service/port_forward/ns/$metadata.namespace/name/$metadata.name/svc_port/${svc_port}/stop",
+                            "onEvent": {
+                              "success": {
+                                "actions": [
+                                  {
+                                    "actionType": "reload",
+                                    "componentId": "detailSvcPortForwardList"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "toggled": true
+                      },
+                      {
+                        "name": "port_name",
+                        "label": "端口名",
+                        "type": "text"
+                      },
+                      {
+                        "name": "svc_port",
+                        "label": "Service端口",
+                        "type": "text"
+                      },
+                      {
+                        "name": "target_port",
+                        "label": "目标端口",
+                        "type": "text"
+                      },
+                      {
+                        "name": "protocol",
+                        "label": "协议",
+                        "type": "text"
+                      },
+                      {
+                        "name": "local_port",
+                        "label": "访问端口",
+                        "type": "tpl",
+                        "tpl": "${local_port ? `${local_port} <a href='http://127.0.0.1:${local_port}' target='_blank'>http</a> <a href='https://127.0.0.1:${local_port}' target='_blank'>https</a>` : ''}"
+                      },
+                      {
+                        "name": "status",
+                        "label": "状态",
+                        "type": "text"
+                      },
+                      {
+                        "name": "pod_name",
+                        "label": "Pod",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
               "type": "dropdown-button",
               "level": "link",
               "buttons": [
@@ -830,7 +970,7 @@
                                   "body": [
                                     {
                                       "type": "websocketMarkdownViewer",
-                                      "url": "/ai/chat/event",
+                                      "url": "/mgm/plugins/ai/chat/event",
                                       "params": {
                                         "note": "${note}",
                                         "source": "${source}",

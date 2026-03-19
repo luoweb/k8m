@@ -100,7 +100,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/example/field",
+                              "url": "/mgm/plugins/ai/chat/example/field",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -176,7 +176,7 @@
             "body": [
               {
                 "type": "websocketMarkdownViewer",
-                "url": "/ai/chat/example",
+                "url": "/mgm/plugins/ai/chat/example",
                 "params": {
                   "kind": "${kind}",
                   "group": "${group}",
@@ -201,7 +201,7 @@
             "body": [
               {
                 "type": "k8sGPT",
-                "api": "/k8s/k8s_gpt/kind/${kind}/run"
+                "api": "/k8s/plugins/k8sgpt/kind/${kind}/run"
               }
             ]
           }
@@ -530,7 +530,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/describe",
+                              "url": "/k8s/plugins/ai/chat/describe",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -669,7 +669,7 @@
                                       "body": [
                                         {
                                           "type": "websocketMarkdownViewer",
-                                          "url": "/ai/chat/example/field",
+                                          "url": "/mgm/plugins/ai/chat/example/field",
                                           "params": {
                                             "kind": "${kind}",
                                             "group": "${group}",
@@ -744,14 +744,14 @@
                   "icon": "fa-brands fa-docker text-primary",
                   "body": "容器列表",
                   "blank": false,
-                  "href": "/#/k/${''|selectedClusterBase64}/ns/pod?spec[nodeName]=${metadata.name}"
+                  "href": "/#/k/${''|selectedClusterMd5}/ns/pod?spec[nodeName]=${metadata.name}"
                 },
                 {
                   "type": "link",
                   "icon": "fa fa-terminal text-primary",
                   "body": "节点终端",
                   "blank": true,
-                  "href": "/#/k/${''|selectedClusterBase64}/NodeExec?nodeName=${metadata.name}"
+                  "href": "/#/k/${''|selectedClusterMd5}/NodeExec?nodeName=${metadata.name}"
                 },
                 {
                   "label": "资源用量",
@@ -854,7 +854,7 @@
                                   "body": [
                                     {
                                       "type": "websocketMarkdownViewer",
-                                      "url": "/ai/chat/event",
+                                      "url": "/mgm/plugins/ai/chat/event",
                                       "params": {
                                         "note": "${note}",
                                         "source": "${source}",
@@ -1103,7 +1103,7 @@
                               "body": [
                                 {
                                   "type": "websocketMarkdownViewer",
-                                  "url": "/ai/chat/any_question",
+                                  "url": "/mgm/plugins/ai/chat/any_question",
                                   "params": {
                                     "kind": "${kind}",
                                     "group": "${group}",

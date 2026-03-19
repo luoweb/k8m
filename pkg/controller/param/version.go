@@ -2,11 +2,12 @@ package param
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 
-	"github.com/gin-gonic/gin"
 	"github.com/weibaohui/k8m/pkg/comm/utils/amis"
 	"github.com/weibaohui/k8m/pkg/flag"
+	"github.com/weibaohui/k8m/pkg/response"
 )
 
 // Version 获取版本号
@@ -15,10 +16,14 @@ import (
 // @Security BearerAuth
 // @Success 200 {object} string
 // @Router /params/version [get]
-func (pc *Controller) Version(c *gin.Context) {
+func (pc *Controller) Version(c *response.Context) {
+
+	podName := os.Getenv("POD_NAME")
+	namespace := os.Getenv("POD_NAMESPACE")
+	podIP := os.Getenv("POD_IP")
 
 	cfg := flag.Init()
-	amis.WriteJsonData(c, gin.H{
+	amis.WriteJsonData(c, response.H{
 		"version":   cfg.Version,
 		"gitCommit": cfg.GitCommit,
 		"gitTag":    cfg.GitTag,
@@ -28,5 +33,8 @@ func (pc *Controller) Version(c *gin.Context) {
 		"compiler":  runtime.Compiler,
 		"platform":  fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
 		"dbType":    cfg.DBDriver,
+		"podName":   podName,
+		"namespace": namespace,
+		"podIP":     podIP,
 	})
 }

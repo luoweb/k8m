@@ -2,14 +2,36 @@
 <h1>K8M</h1>
 </div>
 
+<div align=center>
+ 
+[![weibaohui%2Fk8m | Trendshift](https://trendshift.io/api/badge/repositories/14095)](https://trendshift.io/repositories/14095)
+
+</div>
+
+<div align=center>
+ 
+![GitHub Repo Stars](https://img.shields.io/github/stars/weibaohui/k8m)
+![GitHub Repo Forks](https://img.shields.io/github/forks/weibaohui/k8m)
+
+</div>
+
+<div align=center>
+
+ [![License MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](https://github.com/weibaohui/k8m/blob/master/LICENSE)
+ [![Go Report Card](https://goreportcard.com/badge/github.com/weibaohui/k8m)](https://goreportcard.com/report/github.com/weibaohui/k8m)
+![GitHub Release](https://img.shields.io/github/v/release/weibaohui/k8m)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/weibaohui/k8m/total)
+![GitHub Repo Issues](https://img.shields.io/github/issues/weibaohui/k8m)
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/weibaohui/k8m)](https://archestra.ai/mcp-catalog/weibaohui__k8m)
+[![zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=plastic&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff)](https://zread.ai/weibaohui/k8m)
+![Repobeats analytics image](https://repobeats.axiom.co/api/embed/9fde094e5c9a1d4c530e875864ee7919b17d0690.svg)
+
+</div>
+
 
 [English](README_en.md) | [中文](README.md)
 
-[![k8m](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](https://github.com/weibaohui/k8m/blob/master/LICENSE)
 
-[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/weibaohui/k8m)](https://archestra.ai/mcp-catalog/weibaohui__k8m)
-
-![Alt](https://repobeats.axiom.co/api/embed/9fde094e5c9a1d4c530e875864ee7919b17d0690.svg "Repobeats analytics image")
 
 **k8m** 是一款AI驱动的 Mini Kubernetes AI Dashboard 轻量级控制台工具，专为简化集群管理设计。它基于 AMIS 构建，并通过  [
 `kom`](https://github.com/weibaohui/kom)  作为 Kubernetes API 客户端，**k8m** 内置了
@@ -26,11 +48,9 @@ Qwen2.5-Coder-7B，支持deepseek-ai/DeepSeek-R1-Distill-Qwen-7B模型
 
 - 详细的配置和使用说明请参考[文档](docs/README.md)。
 - 更新日志请参考[更新日志](CHANGELOG.md)。
-- 如需自定义大模型参数、配置私有化大模型，请参考[自托管/自定义大模型支持](docs/use-self-hosted-ai.md)
-  和 [Ollama配置](docs/ollama.md)。
-- 详细的配置选项说明请参考[配置选项说明](docs/config.md)。
-- 数据库配置请参考[数据库配置说明](docs/database.md)。
-- DeepWiki 文档：[开发设计文档](https://deepwiki.com/weibaohui/k8m)
+- [开发设计文档-中文](https://zread.ai/weibaohui/k8m)
+- [开发设计文档-English](https://deepwiki.com/weibaohui/k8m)
+
 
 ### 主要特点
 
@@ -40,6 +60,7 @@ Qwen2.5-Coder-7B，支持deepseek-ai/DeepSeek-R1-Distill-Qwen-7B模型
 - **AI驱动融合**
   ：基于ChatGPT实现划词解释、资源指南、YAML属性自动翻译、Describe信息解读、日志AI问诊、运行命令推荐,并集成了[k8s-gpt](https://github.com/k8sgpt-ai/k8sgpt)
   功能，实现中文展现，为管理k8s提供智能化支持。
+- **功能插件化**：特性功能插件化，按需开启，不开启不占资源。  
 - **MCP集成**:可视化管理MCP，实现大模型调用Tools，内置k8s多集群MCP工具49种，可组合实现超百种集群操作，可作为MCP Server
   供其他大模型软件使用。轻松实现大模型管理k8s。可详细记录每一次MCP调用。支持mcp.so主流服务。
 - **MCP权限打通**:多集群管理权限与MCP大模型调用权限打通，一句话概述：谁使用大模型，就用谁的权限执行MCP。安全使用，无后顾之忧，避免操作越权。
@@ -57,9 +78,10 @@ Qwen2.5-Coder-7B，支持deepseek-ai/DeepSeek-R1-Distill-Qwen-7B模型
 - **多数据库支持**：支持SQLite、MySql、PostgreSql等多种数据库。
 - **完全开源**：开放所有源码，无任何限制，可自由定制和扩展，可商业使用。
 
-**k8m** 的设计理念是“AI驱动，轻便高效，化繁为简”，它帮助开发者和运维人员快速上手，轻松管理 Kubernetes 集群。
+**k8m** 的设计理念是"AI驱动，轻便高效，化繁为简"，它帮助开发者和运维人员快速上手，轻松管理 Kubernetes 集群。
 
 ![](https://github.com/user-attachments/assets/0951d6c1-389c-49cb-b247-84de15b6ec0e)
+
 
 ## **运行**
 
@@ -110,66 +132,6 @@ services:
 启动之后，访问`3618`端口，默认用户：`k8m`，默认密码`k8m`。
 如果你想通过在线环境快速拉起体验，可以访问：[k8m](https://cnb.cool/znb/qifei/-/tree/main/letsfly/justforfun/k8m)
 
-## **ChatGPT 配置指南**
-
-### 内置GPT
-
-从v0.0.8版本开始，将内置GPT，无需配置。
-如果您需要使用自己的GPT，请参考以下文档。
-
-- [自托管/自定义大模型支持](use-self-hosted-ai.md) - 如何使用自托管的
-- [Ollama配置](ollama.md) - 如何配置使用Ollama大模型。
-
-### **ChatGPT 状态调试**
-
-如果设置参数后，依然没有效果，请尝试使用`./k8m -v 6`获取更多的调试信息。
-会输出以下信息，通过查看日志，确认是否启用ChatGPT。
-
-```go
-ChatGPT 开启状态:true
-ChatGPT 启用 key:sk-hl**********************************************, url:https: // api.siliconflow.cn/v1
-ChatGPT 使用环境变量中设置的模型:Qwen/Qwen2.5-7B-Instruc
-```
-
-### **ChatGPT 账户**
-
-本项目集成了[github.com/sashabaranov/go-openai](https://github.com/sashabaranov/go-openai)SDK。
-国内访问推荐使用[硅基流动](https://cloud.siliconflow.cn/)的服务。
-登录后，在[https://cloud.siliconflow.cn/account/ak](https://cloud.siliconflow.cn/account/ak)创建API_KEY
-
-## **k8m 支持环境变量设置**
-
-k8m 支持通过环境变量和命令行参数灵活配置，主要参数如下：
-
-| 环境变量              | 默认值                   | 说明                                                           |
-| --------------------- | ------------------------ | -------------------------------------------------------------- |
-| `PORT`                | `3618`                   | 监听的端口号                                                   |
-| `KUBECONFIG`          | `~/.kube/config`         | `kubeconfig` 文件路径，会自动扫描识别同级目录下所有的配置文件  |
-| `ANY_SELECT`          | `"true"`                 | 是否开启任意选择划词解释，默认开启 (default true)              |
-| `LOGIN_TYPE`          | `"password"`             | 登录方式（如 `password`, `oauth`, `token`）                    |
-| `ENABLE_TEMP_ADMIN`   | `"false"`                | 是否启用临时管理员账户配置，默认关闭。初次登录、忘记密码时使用 |
-| `ADMIN_USERNAME`      |                          | 管理员用户名，启用临时管理员账户配置后生效                     |
-| `ADMIN_PASSWORD`      |                          | 管理员密码，启用临时管理员账户配置后生效                       |
-| `DEBUG`               | `"false"`                | 是否开启 `debug` 模式                                          |
-| `LOG_V`               | `"2"`                    | log输出日志，同klog用法                                        |
-| `JWT_TOKEN_SECRET`    | `"your-secret-key"`      | 用于 JWT Token 生成的密钥                                      |
-| `KUBECTL_SHELL_IMAGE` | `bitnami/kubectl:latest` | kubectl shell 镜像地址                                         |
-| `NODE_SHELL_IMAGE`    | `alpine:latest`          | Node shell 镜像地址                                            |
-| `IMAGE_PULL_TIMEOUT`  | `30`                     | Node shell、kubectl shell 镜像拉取超时时间（秒）               |
-| `CONNECT_CLUSTER`     | `"false"`                | 启动程序后，是否自动连接发现的集群，默认关闭                   |
-| `PRINT_CONFIG`        | `"false"`                | 是否打印配置信息                                               |
-
-详细参数说明和更多配置方式请参考 [docs/readme.md](docs/README.md)。
-
-这些环境变量可以通过在运行应用程序时设置，例如：
-
-```sh
-export PORT=8080
-export GIN_MODE="release"
-./k8m
-```
-
-其他参数请参考 [docs/readme.md](docs/README.md)。
 
 ## 容器化k8s集群方式运行
 
@@ -202,9 +164,33 @@ kubectl apply -f https://raw.githubusercontent.com/weibaohui/k8m/refs/heads/main
   默认使用了nodePort开放，请访问31999端口。或自行配置Ingress
   http://NodePortIP:31999
 
-### 修改配置
+## 生产部署启用主备选举插件，注意事项
 
-首选建议通过修改环境变量方式进行修改。 例如增加deploy.yaml中的env参数
+- 单实例运行service的定义`不要加` `k8m.io/role: leader` 标签，加了不能正常访问。
+- 多实例运行service的定义`必须加` `k8m.io/role: leader` 标签，否则不会切换。
+- 多实例运行的yaml如下：
+```docker
+kubectl apply -f https://raw.githubusercontent.com/weibaohui/k8m/refs/heads/main/deploy/k8m-ms.yaml
+```
+
+
+## **ChatGPT 配置指南**
+
+### 内置GPT
+
+从v0.0.8版本开始，将内置GPT，无需配置。
+如果您需要使用自己的GPT，请参考以下文档。
+
+- [自托管/自定义大模型支持](docs/use-self-hosted-ai.md) - 如何使用自托管的
+- [Ollama配置](docs/ollama.md) - 如何配置使用Ollama大模型。
+
+### **ChatGPT 状态调试**
+
+如果设置参数后，依然没有效果，请尝试使用`./k8m -v 6`获取更多的调试信息。
+会输出以下信息，通过查看日志，确认是否启用ChatGPT。
+  
+
+
 
 ## 开发调试
 
@@ -225,7 +211,7 @@ go mod tidy
 #运行
 air
 #或者
-go run main.go 
+go run *.go 
 # 监听localhost:3618端口
 ```
 
@@ -258,6 +244,4 @@ pnpm run dev
 <br><img width="214" alt="Image" src="https://github.com/user-attachments/assets/166db141-42c5-42c4-9964-8e25cf12d04c" />
 
 ## 微信群
-![输入图片说明](https://foruda.gitee.com/images/1764508067815560818/ce8646bb_77493.png "屏幕截图")
-
-
+![输入图片说明](https://foruda.gitee.com/images/1773302512337798592/4d72288b_77493.png "屏幕截图")

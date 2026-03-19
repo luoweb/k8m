@@ -100,7 +100,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/example/field",
+                              "url": "/mgm/plugins/ai/chat/example/field",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -176,7 +176,7 @@
             "body": [
               {
                 "type": "websocketMarkdownViewer",
-                "url": "/ai/chat/example",
+                "url": "/mgm/plugins/ai/chat/example",
                 "params": {
                   "kind": "${kind}",
                   "group": "${group}",
@@ -185,15 +185,6 @@
               }
             ]
           }
-        },
-        {
-          "label": "创建",
-          "icon": "fas fa-dharmachakra text-primary",
-          "type": "button",
-          "level": "link",
-          "actionType": "url",
-          "blank": true,
-          "url": "/#/k/${''|selectedClusterBase64}/apply/apply?kind=${kind}"
         }
       ]
     },
@@ -336,7 +327,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/describe",
+                              "url": "/k8s/plugins/ai/chat/describe",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -475,7 +466,7 @@
                                       "body": [
                                         {
                                           "type": "websocketMarkdownViewer",
-                                          "url": "/ai/chat/example/field",
+                                          "url": "/mgm/plugins/ai/chat/example/field",
                                           "params": {
                                             "kind": "${kind}",
                                             "group": "${group}",
@@ -550,7 +541,7 @@
                   "icon": "fas fa-list text-primary",
                   "body": "实例列表",
                   "blank": true,
-                  "href": "/#/k/${''|selectedClusterBase64}/crd/namespaced_cr?kind=${spec.names.kind}&group=${spec.group}&version=${spec.versions[0].name}",
+                  "href": "/#/k/${''|selectedClusterMd5}/crd/namespaced_cr?kind=${spec.names.kind}&group=${spec.group}&version=${spec.versions[0].name}",
                   "visibleOn": "spec.scope=='Namespaced'"
                 },
                 {
@@ -558,7 +549,7 @@
                   "icon": "fas fa-list text-primary",
                   "body": "实例列表",
                   "blank": true,
-                  "href": "/#/k/${''|selectedClusterBase64}/crd/cluster_cr?kind=${spec.names.kind}&group=${spec.group}&version=${spec.versions[0].name}",
+                  "href": "/#/k/${''|selectedClusterMd5}/crd/cluster_cr?kind=${spec.names.kind}&group=${spec.group}&version=${spec.versions[0].name}",
                   "visibleOn": "spec.scope=='Cluster'"
                 }
               ]

@@ -101,7 +101,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/example/field",
+                              "url": "/mgm/plugins/ai/chat/example/field",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -177,7 +177,7 @@
             "body": [
               {
                 "type": "websocketMarkdownViewer",
-                "url": "/ai/chat/example",
+                "url": "/mgm/plugins/ai/chat/example",
                 "params": {
                   "kind": "${kind}",
                   "group": "${group}",
@@ -186,15 +186,6 @@
               }
             ]
           }
-        },
-        {
-          "label": "创建",
-          "icon": "fas fa-dharmachakra text-primary",
-          "type": "button",
-          "level": "link",
-          "actionType": "url",
-          "blank": true,
-          "url": "/#/k/${''|selectedClusterBase64}/apply/apply?kind=${kind}"
         }
       ]
     },
@@ -377,7 +368,7 @@
                           "body": [
                             {
                               "type": "websocketMarkdownViewer",
-                              "url": "/ai/chat/describe",
+                              "url": "/k8s/plugins/ai/chat/describe",
                               "params": {
                                 "kind": "${kind}",
                                 "group": "${group}",
@@ -516,7 +507,7 @@
                                       "body": [
                                         {
                                           "type": "websocketMarkdownViewer",
-                                          "url": "/ai/chat/example/field",
+                                          "url": "/mgm/plugins/ai/chat/example/field",
                                           "params": {
                                             "kind": "${kind}",
                                             "group": "${group}",
@@ -614,7 +605,7 @@
               "type": "link",
               "body": "<strong class='text-green-500 font-black'>[${roleRef.kind}]</strong>${roleRef.name}",
               "blank": false,
-              "href": "/#/k/${''|selectedClusterBase64}/ns/role?metadata[name]=${roleRef.name}"
+              "href": "/#/k/${''|selectedClusterMd5}/ns/role?metadata[name]=${roleRef.name}"
             }
           ],
           "searchable": {
@@ -635,7 +626,7 @@
                 "type": "link",
                 "body": "<strong class='text-green-500 font-black'>[${kind}]</strong>${name}",
                 "blank": false,
-                "href": "${kind == 'ServiceAccount' ? '/#/k/${''|selectedClusterBase64}/ns/service_account?metadata[name]=' + name : ''}"
+                "href": "${kind == 'ServiceAccount' ? '/#/k/${''|selectedClusterMd5}/ns/service_account?metadata[name]=' + name : ''}"
               }
             ]
           },

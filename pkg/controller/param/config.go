@@ -3,9 +3,10 @@ package param
 import (
 	"fmt"
 
-	"github.com/gin-gonic/gin"
 	"github.com/weibaohui/k8m/pkg/comm/utils/amis"
 	"github.com/weibaohui/k8m/pkg/flag"
+	"github.com/weibaohui/k8m/pkg/plugins/api"
+	"github.com/weibaohui/k8m/pkg/response"
 )
 
 // Config 获取某一个参数配置
@@ -15,13 +16,15 @@ import (
 // @Param key path string true "配置项key"
 // @Success 200 {object} string
 // @Router /params/config/{key} [get]
-func (pc *Controller) Config(c *gin.Context) {
+func (pc *Controller) Config(c *response.Context) {
 	key := c.Param("key")
 	cfg := flag.Init()
 	s := ""
 	switch key {
 	case "AnySelect":
-		s = fmt.Sprintf("%v", cfg.AnySelect)
+		s = fmt.Sprintf("%v", api.AIConfigService().AnySelect())
+	case "FloatingWindow":
+		s = fmt.Sprintf("%v", api.AIConfigService().FloatingWindow())
 	case "ProductName":
 		s = fmt.Sprintf("%v", cfg.ProductName)
 	}
