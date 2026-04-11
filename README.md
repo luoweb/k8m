@@ -38,11 +38,24 @@
 Qwen2.5-Coder-7B，支持deepseek-ai/DeepSeek-R1-Distill-Qwen-7B模型
 模型交互能力，同时支持接入您自己的私有化大模型（包括ollama）。
 
-### 演示DEMO
 
-[DEMO](http://107.150.119.151:3618)
-[DEMO-InCluster模式](http://107.150.119.151:31999)
-用户名密码 demo/demo
+# 快速体验
+本项目提供cnb 在线访问地址 [k8m](https://cnb.cool/znb/qifei/-/tree/main/letsfly/justforfun/k8m)
+
+1. fork 这个项目后，
+1. 点击 仓库右上角 🛫起飞 按钮，
+1. 选择云IDE，
+1. 进入终端
+1. 输入cd `letsfly/justforfun/k8m  && docker-compose up -d && docker-compose ps `
+1. 进入端口 （在终端 tab页面右边）
+1. 新建端口转发，填入8888，确定
+1. 点击生成的转发地址，打开k8m 登录页面
+1. 输入用户名密码：k8m k8m 。
+1. 🛫
+
+ 
+
+![](../../../public/k8m.webp)
 
 ### 文档
 
